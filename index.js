@@ -2,7 +2,6 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Collection, REST, Routes, Events } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const { handleTicketButton, createTicket, closeTicket, handleUserModal } = require('./utils/ticketsystem');
 const { DISCORD_TOKEN, CLIENT_ID, GUILD_ID, PREFIX = '-' } = process.env;
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences] });
@@ -27,15 +26,6 @@ client.on(Events.MessageCreate, async (message) => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
-    // These must run before the slash-command check: buttons and modals are ticket interactions.
-    if (interaction.isButton() && interaction.customId.startsWith('ticket:')) return handleTicketButton(interaction);
-    if (interaction.isModalSubmit()) {
-      if (interaction.customId.startsWith('ticket:details:')) return createTicket(interaction, interaction.customId.split(':')[2], interaction.fields.getTextInputValue('subject'), interaction.fields.getTextInputValue('details'));
-      if (interaction.customId === 'ticket:close-reason') return closeTicket(interaction, interaction.fields.getTextInputValue('reason'));
-      if (interaction.customId === 'ticket:add-user') return handleUserModal(interaction, 'add');
-      if (interaction.customId === 'ticket:remove-user') return handleUserModal(interaction, 'remove');
-      return;
-    }
     if (!interaction.isChatInputCommand()) return;
     if (interaction.commandName === 'sync') { loadPrefixCommands(); return interaction.reply({ content: `Reloaded ${client.commands.size} prefix commands.`, ephemeral: true }); }
     if (interaction.commandName === 'deploy') { await interaction.deferReply({ ephemeral: true }); await deploySlashCommands(); return interaction.editReply('Slash commands deployed.'); }
