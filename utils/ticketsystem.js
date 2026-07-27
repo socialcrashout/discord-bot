@@ -1,7 +1,7 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, MessageFlags, ModalBuilder, PermissionFlagsBits, TextDisplayBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const transcripts = require('discord-html-transcripts');
 const config = require('./config');
-const store = require('./tickets');
+const store = require('./ticket');
 
 const category = (id) => config.categories.find((c) => c.id === id);
 const staff = (member) => member?.roles.cache.has(config.adminRoleId) || member?.roles.cache.has(config.supportRoleId);

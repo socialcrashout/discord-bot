@@ -2,7 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Collection, REST, Routes, Events } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const { handleTicketButton, createTicket, closeTicket, handleUserModal } = require('./ticketSystem');
+const { handleTicketButton, createTicket, closeTicket, handleUserModal } = require('./utils/ticketsystem');
 const { DISCORD_TOKEN, CLIENT_ID, GUILD_ID, PREFIX = '-' } = process.env;
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences] });
