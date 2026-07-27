@@ -4,7 +4,7 @@ const config = {
   adminRoleId: '1529922817578106959',
   supportRoleId: '1529922817578106958',
   logChannelId: process.env.TICKET_LOG_CHANNEL_ID || '1529922818253390018',
-  parentCategoryId: process.env.TICKET_PARENT_CATEGORY_ID || '',
+  parentCategoryId: process.env.TICKET_PARENT_CATEGORY_ID || '1529922818253390016',
   autoCloseAfterHours: 12,
   categories: [
     { id: 'staffing', label: 'Staffing', emoji: '🍗', description: 'Employment, staff reports, applications, or promotions.', color: 0xF97316 },
