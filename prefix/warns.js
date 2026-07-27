@@ -1,0 +1,60 @@
+const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, MessageFlags } = require('discord.js');
+const { getWarningsForUser } = require('../utils/warnings');
+
+module.exports = {
+    name: 'warns',
+    description: 'View all warnings a member has',
+    // Usage: -warns @user
+    async execute(message, args) {
+        const errorReply = (text) => message.reply({
+            components: [new ContainerBuilder().addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(text)
+            )],
+            flags: MessageFlags.IsComponentsV2,
+        });
+
+        if (!message.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+            return errorReply('<:warning:1531049700520624278> You do not have permission to view warnings.');
+        }
+
+        const target = message.mentions.users?.first();
+        if (!target) return errorReply('<:warning:1531049700520624278> Please mention a member. Usage: `-warns @user`');
+
+        const warnings = getWarningsForUser(message.guild.id, target.id);
+
+        if (warnings.length === 0) {
+            return message.channel.send({
+                components: [new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(`**${target.tag}** has no warnings.`)
+                )],
+                flags: MessageFlags.IsComponentsV2,
+            });
+        }
+
+        const container = new ContainerBuilder().addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+                `## <:ShieldCheck:1530775133713731826> Warnings for ${target.tag}\n` +
+                `-# **<:user:1530778349184618627> Total Warnings:** ${warnings.length}`
+            )
+        );
+
+        const sorted = [...warnings].sort((a, b) => b.timestamp - a.timestamp);
+
+        sorted.forEach((warning) => {
+            container.addSeparatorComponents(new SeparatorBuilder());
+            container.addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(
+                    `**<:Dot:1530774492412907721> Case #${warning.caseNumber}**\n` +
+                    `**<:sig:1530774414436729012> Moderator:** ${warning.moderatorTag}\n` +
+                    `**<:Comment:1530774457961025618> Reason:** ${warning.reason}\n` +
+                    `**<:Calendar:1530778367966843010> Date:** <t:${warning.timestamp}:F>`
+                )
+            );
+        });
+
+        await message.channel.send({
+            components: [container],
+            flags: MessageFlags.IsComponentsV2,
+        });
+    },
+};

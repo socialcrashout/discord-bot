@@ -1,0 +1,55 @@
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+
+const LOG_CHANNEL_ID = '1529922818253390018';
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('dmuser')
+    .setDescription('DM a user and log the interaction')
+    .addUserOption(option => option.setName('user').setDescription('The user to DM').setRequired(true))
+    .addStringOption(option => option.setName('message').setDescription('The message to send').setRequired(true)),
+
+  async execute(interaction) {
+    const staffRoleIds = ['1529922817578106961'];
+
+    if (!interaction.member.roles.cache.some(role => staffRoleIds.includes(role.id))) {
+      return interaction.reply({
+        content: "❌ You do not have permission to use this command.",
+        ephemeral: true,
+      });
+    }
+
+    const staff = interaction.user;
+    const user = interaction.options.getUser('user');
+    const message = interaction.options.getString('message');
+
+    try {
+      await user.send(message);
+
+      const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+      if (logChannel) {
+        const container = new ContainerBuilder()
+          .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+              `## <:ShieldCheck:1530775133713731826> DM Command Used!\n` +
+              `-# **<:sig:1530774414436729012> Used by:** ${staff}\n` +
+              `**<:Comment:1530774457961025618> Sent to:** ${user} (${user.id})\n` +
+              `**<:Dot:1530774492412907721> Message:** ${message}`
+            )
+          );
+
+        await logChannel.send({
+          components: [container],
+          flags: MessageFlags.IsComponentsV2,
+          allowedMentions: { parse: [] },
+        });
+      }
+
+      await interaction.reply({ content: `Successfully DM'd ${user.tag} and logged the interaction.`, ephemeral: true });
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({ content: 'There was an error sending the DM or logging the interaction.', ephemeral: true });
+    }
+  }
+};

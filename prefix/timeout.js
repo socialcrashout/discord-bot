@@ -1,0 +1,94 @@
+const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+const getNextCase = require('../utils/getNextCase');
+
+const LOG_CHANNEL_ID = '1529922818253390018';
+
+// Parses strings like "10m", "1h", "2d" into milliseconds. Max allowed by Discord is 28 days.
+function parseDuration(input) {
+    const match = /^(\d+)\s*(s|m|h|d)$/i.exec(input.trim());
+    if (!match) return null;
+
+    const amount = parseInt(match[1], 10);
+    const unit = match[2].toLowerCase();
+    const multipliers = { s: 1000, m: 60 * 1000, h: 60 * 60 * 1000, d: 24 * 60 * 60 * 1000 };
+    const ms = amount * multipliers[unit];
+
+    const maxMs = 28 * 24 * 60 * 60 * 1000;
+    if (ms > maxMs) return null;
+
+    return ms;
+}
+
+module.exports = {
+    name: 'timeout',
+    description: 'Timeout (mute) a member for a set duration',
+    // Usage: -timeout @user 10m reason...
+    async execute(message, args) {
+        const errorReply = (text) => message.reply({
+            components: [new ContainerBuilder().addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(text)
+            )],
+            flags: MessageFlags.IsComponentsV2,
+        });
+
+        if (!message.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+            return errorReply('You do not have permission to timeout members.');
+        }
+
+        const target = message.mentions.members?.first();
+        if (!target) return errorReply('Please mention a member to timeout. Usage: `-timeout @user 10m [reason]`');
+
+        const durationInput = args[1];
+        if (!durationInput) return errorReply('<:warning:1531049700520624278> Please provide a duration. Usage: `-timeout @user 10m [reason]`');
+
+        const reason = args.slice(2).join(' ') || 'No reason provided';
+
+        if (!target.moderatable) return errorReply('I cannot timeout this member. They may have a higher role than me or I lack permissions.');
+        if (target.id === message.author.id) return errorReply('You cannot timeout yourself.');
+
+        const ms = parseDuration(durationInput);
+        if (!ms) return errorReply('<:warning:1531049700520624278> Invalid duration. Use a format like `10m`, `1h`, or `2d` (max 28d).');
+
+        try {
+            await target.timeout(ms, reason);
+
+            const caseNumber = await getNextCase(message.guild.id);
+
+            // Log to mod-log channel
+            const logChannel = message.guild.channels.cache.get(LOG_CHANNEL_ID);
+            if (logChannel) {
+                const logContainer = new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(
+                        `## <:ShieldCheck:1530775133713731826> Timeout Command Used! | Case #${caseNumber}\n` +
+                        `-# **<:sig:1530774414436729012> Used By:** ${message.author}\n` +
+                        `**<:user:1530778349184618627> User Timed Out:** ${target.user.tag} (${target.id})\n` +
+                        `**<:Comment:1530774457961025618> Reason:** ${reason}\n` +
+                        `**<:Dot:1530774492412907721> Channel:** ${message.channel}\n` +
+                        `**<:Calendar:1530778367966843010> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
+                    )
+                );
+
+                await logChannel.send({
+                    components: [logContainer],
+                    flags: MessageFlags.IsComponentsV2,
+                    allowedMentions: { parse: [] },
+                });
+            }
+
+            const container = new ContainerBuilder().addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(
+                    `**Member Timed Out** | Case #${caseNumber}\n` +
+                    `**User:** ${target.user.tag} (${target.id})\n` +
+                    `**Moderator:** ${message.author.tag}\n` +
+                    `**Duration:** ${durationInput}\n` +
+                    `**Reason:** ${reason}`
+                )
+            );
+
+            await message.channel.send({ components: [container], flags: MessageFlags.IsComponentsV2 });
+        } catch (error) {
+            console.error(error);
+            await errorReply('Something went wrong while trying to timeout that member.');
+        }
+    },
+};

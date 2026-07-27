@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Environment variables and secrets - NEVER commit this
+.env
+
+# Data files (case counters, warnings, lock states) - these are runtime data, not code
+data/
+
+# OS/editor junk
+.DS_Store
+.vscode/
+*.log
