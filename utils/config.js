@@ -1,6 +1,6 @@
 const config = {
   // Paste a direct image URL here (Discord CDN links work well). Leave blank for no banner.
-  panelBannerUrl: '',
+  panelBannerUrl: 'https://yumi.onl/api/files/6a6789a2e4b985f0ff91fa68/raw',
   adminRoleId: '1529922817578106959',
   supportRoleId: '1529922817578106958',
   logChannelId: process.env.TICKET_LOG_CHANNEL_ID || '',
