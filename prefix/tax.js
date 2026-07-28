@@ -13,7 +13,7 @@ module.exports = {
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('## Tax')
+                new TextDisplayBuilder().setContent('## <:money:1502514540687003668> | Tax')
             )
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
