@@ -2,7 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayB
 const getNextCase = require('../utils/getNextCase');
 const { addWarning } = require('../utils/warnings');
 
-const LOG_CHANNEL_ID = '1529922818253390018';
+const LOG_CHANNEL_ID = '1506450870269906944';
 
 module.exports = {
     data: new SlashCommandBuilder()
