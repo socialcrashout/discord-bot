@@ -46,7 +46,7 @@
 
   "permissions": {
     "roles": {
-      "owner": "REPLACE_ROLE_ID",
+      "owner": "1529922817578106961",
       "executive": "REPLACE_ROLE_ID",
       "management": "REPLACE_ROLE_ID",
       "administrators": "REPLACE_ROLE_ID",
@@ -56,7 +56,7 @@
       "generalSupport": "REPLACE_ROLE_ID"
     },
     "staffRoleIds": [
-      "REPLACE_ROLE_ID"
+      "1529922817578106961"
     ],
     "adminOnlyActions": [
       "delete_ticket",
