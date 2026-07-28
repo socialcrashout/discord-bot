@@ -1,18 +1,10 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 
-const PREFIX = '-';
-
 module.exports = {
-    name: 'messageCreate',
-    async execute(message) {
-        if (message.author.bot) return;
-        if (!message.content.startsWith(PREFIX)) return;
-
-        const args = message.content.slice(PREFIX.length).trim().split(/\s+/);
-        const commandName = args.shift().toLowerCase();
-
-        if (commandName !== 'tax') return;
-
+    name: 'tax',
+    description: 'Calculate tax on an amount',
+    // Usage: -tax <amount>
+    async execute(message, args) {
         const inputAmount = parseInt(args[0], 10);
 
         if (isNaN(inputAmount) || inputAmount < 0) {
