@@ -25,7 +25,7 @@ module.exports = {
             .map(a => a.replace(/\D/g, ''))
             .find(a => a.length > 0);
 
-        if (!caseNumber) return errorReply('Please provide a case number. Usage: `-clearwarn <caseNumber>`');
+        if (!caseNumber) return errorReply('<:WarningIcon:1508245066135765034> Please provide a case number. Usage: `-clearwarn <caseNumber>`');
 
         const removed = removeWarningByCase(message.guild.id, parseInt(caseNumber, 10));
         if (!removed) return errorReply(`No warning found with Case #${caseNumber}.`);

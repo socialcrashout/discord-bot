@@ -20,7 +20,7 @@ module.exports = {
         }
 
         const target = message.mentions.members?.first();
-        if (!target) return errorReply('<:warning:1531049700520624278> Please mention a member to kick. Usage: `-kick @user [reason]`');
+        if (!target) return errorReply('<:WarningIcon:1508245066135765034> Please mention a member to kick. Usage: `-kick @user [reason]`');
 
         const reason = args.slice(1).join(' ') || 'No reason provided';
 
