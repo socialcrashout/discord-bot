@@ -23,7 +23,7 @@ module.exports = {
         const previousValue = getLock(channel.id);
 
         if (previousValue === undefined) {
-            return errorReply('This channel is not currently locked.');
+            return errorReply('<:WarningIcon:1508245066135765034> This channel is not currently locked.');
         }
 
         const reason = args.join(' ') || 'No reason provided';

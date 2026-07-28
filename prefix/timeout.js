@@ -39,7 +39,7 @@ module.exports = {
         if (!target) return errorReply('Please mention a member to timeout. Usage: `-timeout @user 10m [reason]`');
 
         const durationInput = args[1];
-        if (!durationInput) return errorReply('<:warning:1531049700520624278> Please provide a duration. Usage: `-timeout @user 10m [reason]`');
+        if (!durationInput) return errorReply('<:WarningIcon:1508245066135765034> Please provide a duration. Usage: `-timeout @user 10m [reason]`');
 
         const reason = args.slice(2).join(' ') || 'No reason provided';
 

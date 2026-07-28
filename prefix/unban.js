@@ -21,7 +21,7 @@ module.exports = {
 
         const rawId = args[0]?.replace(/[<@!>]/g, '');
         if (!rawId || !/^\d{17,20}$/.test(rawId)) {
-            return errorReply('<:warning:1531049700520624278> Please provide a valid user ID. Usage: `-unban <userId> [reason]`');
+            return errorReply('<:WarningIcon:1508245066135765034> Please provide a valid user ID. Usage: `-unban <userId> [reason]`');
         }
 
         const reason = args.slice(1).join(' ') || 'No reason provided';
