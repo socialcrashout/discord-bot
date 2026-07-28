@@ -60,8 +60,8 @@ module.exports = {
                     `## <:ShieldCheck:1502514212168274061> Serverslock Command Used!\n` +
                     `-# **<:sig:1502514350014070795> Used By:** ${message.author}\n` +
                     `**<:person:1502514200705105981> Channels Locked:** ${lockedCount}\n` +
-                    `**<:Comment:1530774457961025618> Reason:** ${reason}\n` +
-                    `**<:Calendar:1530778367966843010> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
+                    `**<:Comment:1502512880493400196> Reason:** ${reason}\n` +
+                    `**<:Calendar:1502513561866473734> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
                 )
             );
 
