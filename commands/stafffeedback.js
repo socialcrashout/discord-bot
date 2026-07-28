@@ -48,7 +48,7 @@ module.exports = {
             )
             .setTimestamp();
 
-        const staffeedbackchannelid = 'CHANNEL_ID_WHERE_THE_STAFF_FEEDBACK_IS_GOING_TO_BE_SENT';
+        const staffeedbackchannelid = '1529922818253390018';
         const staffeedbackchannel = interaction.guild.channels.cache.get(staffeedbackchannelid);
 
         if (!staffeedbackchannel) {
