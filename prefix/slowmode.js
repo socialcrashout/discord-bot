@@ -35,7 +35,7 @@ module.exports = {
         }
 
         const durationInput = args[0];
-        if (!durationInput) return errorReply('<:warning:1531049700520624278> Please provide a duration. Usage: `-slowmode <10s|5m|1h|0>`');
+        if (!durationInput) return errorReply('<:WarningIcon:1508245066135765034> Please provide a duration. Usage: `-slowmode <10s|5m|1h|0>`');
 
         let seconds;
         if (durationInput.trim() === '0') {
