@@ -42,7 +42,7 @@ module.exports = {
                         `**<:person:1502514200705105981> User Kicked:** ${target.user.tag} (${target.id})\n` +
                         `**<:Comment:1502512880493400196> Reason:** ${reason}\n` +
                         `**<:Dot:1502513706347528213> Channel:** ${message.channel}\n` +
-                        `**<:Calendar:1530778367966843010> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
+                        `**<:Calendar:1502513561866473734> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
                     )
                 );
 
