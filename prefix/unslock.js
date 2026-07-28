@@ -41,7 +41,7 @@ module.exports = {
                         `-# **<:sig:1502514350014070795> Used By:** ${message.author}\n` +
                         `**<:Comment:1502512880493400196> Reason:** ${reason}\n` +
                         `**<:Dot:1502513706347528213> Channel:** ${channel}\n` +
-                        `**<:Calendar:1530778367966843010> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
+                        `**<:Calendar:1502513561866473734> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
                     )
                 );
 
