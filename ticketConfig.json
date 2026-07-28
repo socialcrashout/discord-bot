@@ -16,7 +16,7 @@
   "channels": {
     "ticketCategoryId": "REPLACE_WITH_DISCORD_CATEGORY_ID",
     "transcriptLogChannelId": "1529922818253390018",
-    "actionLogChannelId": "REPLACE_WITH_CHANNEL_ID",
+    "actionLogChannelId": "1529922818253390018",
     "ratingLogChannelId": "1529922818253390019",
     "panelChannelId": "1529922818253390016"
   },
