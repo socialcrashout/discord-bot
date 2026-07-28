@@ -34,8 +34,8 @@ module.exports = {
         if (logChannel) {
             const logContainer = new ContainerBuilder().addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `## <:ShieldCheck:1530775133713731826> Clearwarn Command Used!\n` +
-                    `-# **<:sig:1530774414436729012> Used By:** ${message.author}\n` +
+                    `## <:ShieldCheck:1502514212168274061> Clearwarn Command Used!\n` +
+                    `-# **<:sig:1502514350014070795> Used By:** ${message.author}\n` +
                     `**<:user:1530778349184618627> Warning Removed:** Case #${caseNumber} (was ${removed.userTag})\n` +
                     `**<:Comment:1530774457961025618> Original Reason:** ${removed.reason}\n` +
                     `**<:Dot:1530774492412907721> Channel:** ${message.channel}\n` +
