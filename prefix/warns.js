@@ -33,8 +33,8 @@ module.exports = {
 
         const container = new ContainerBuilder().addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-                `## <:ShieldCheck:1530775133713731826> Warnings for ${target.tag}\n` +
-                `-# **<:user:1530778349184618627> Total Warnings:** ${warnings.length}`
+                `## <:ShieldCheck:1502514212168274061> Warnings for ${target.tag}\n` +
+                `-# **<:person:1502514200705105981> Total Warnings:** ${warnings.length}`
             )
         );
 
