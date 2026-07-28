@@ -1,7 +1,7 @@
 const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 const getNextCase = require('../utils/getNextCase');
 
-const LOG_CHANNEL_ID = '1529922818253390018';
+const LOG_CHANNEL_ID = '1506450870269906944';
 
 // Parses strings like "10m", "1h", "2d" into milliseconds. Max allowed by Discord is 28 days.
 function parseDuration(input) {

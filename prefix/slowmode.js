@@ -1,6 +1,6 @@
 const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 
-const LOG_CHANNEL_ID = '1529922818253390018';
+const LOG_CHANNEL_ID = '1506450870269906944';
 
 // Parses strings like "10s", "5m", "1h" into seconds. Discord's max slowmode is 6 hours.
 function parseDuration(input) {

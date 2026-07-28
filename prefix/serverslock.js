@@ -1,7 +1,7 @@
 const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags, ChannelType } = require('discord.js');
 const { saveLockState, getLockState } = require('../utils/serverLock');
 
-const LOG_CHANNEL_ID = '1529922818253390018';
+const LOG_CHANNEL_ID = '1506450870269906944';
 
 module.exports = {
     name: 'serverslock',
