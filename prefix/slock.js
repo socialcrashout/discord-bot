@@ -44,7 +44,7 @@ module.exports = {
             if (logChannel) {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
-                        `## <:ShieldCheck:1530775133713731826> Slock Command Used!\n` +
+                        `## <:ShieldCheck:1502514212168274061> Slock Command Used!\n` +
                         `-# **<:sig:1530774414436729012> Used By:** ${message.author}\n` +
                         `**<:Comment:1530774457961025618> Reason:** ${reason}\n` +
                         `**<:Dot:1530774492412907721> Channel:** ${channel}\n` +
