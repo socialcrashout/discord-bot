@@ -60,7 +60,7 @@ module.exports = {
 
         const amount = parseInt(args[0], 10);
         if (!amount || amount < 1 || amount > 100) {
-            return errorReply('<:warning:1531049700520624278> Please provide a number between 1 and 100. Usage: `-purge <amount> [@user] [reason]`');
+            return errorReply('<:WarningIcon:1508245066135765034> Please provide a number between 1 and 100. Usage: `-purge <amount> [@user] [reason]`');
         }
 
         const target = message.mentions.users?.first();
