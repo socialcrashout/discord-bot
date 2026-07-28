@@ -41,8 +41,8 @@ module.exports = {
                         `-# **<:sig:1502514350014070795> Used By:** ${message.author}\n` +
                         `**<:person:1502514200705105981> User Banned:** ${target.user.tag} (${target.id})\n` +
                         `**<:Comment:1502512880493400196> Reason:** ${reason}\n` +
-                        `**<:Dot:1530774492412907721> Channel:** ${message.channel}\n` +
-                        `**<:Calendar:1530778367966843010> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
+                        `**<:Dot:1502513706347528213> Channel:** ${message.channel}\n` +
+                        `**<:Calendar:1502513561866473734> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
                     )
                 );
 
