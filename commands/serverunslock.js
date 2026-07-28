@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 const { getLockState, clearLockState } = require('../utils/serverLock');
 
-const LOG_CHANNEL_ID = '1529922818253390018';
+const LOG_CHANNEL_ID = '15064508702699069448';
 
 module.exports = {
     data: new SlashCommandBuilder()
