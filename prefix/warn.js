@@ -44,7 +44,7 @@ module.exports = {
             if (logChannel) {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
-                        `## <:ShieldCheck:1530775133713731826> Warn Command Used! | Case #${caseNumber}\n` +
+                        `## <:ShieldCheck:1502514212168274061> Warn Command Used! | Case #${caseNumber}\n` +
                         `-# **<:sig:1530774414436729012> Used By:** ${message.author}\n` +
                         `**<:user:1530778349184618627> User Warned:** ${target.user.tag} (${target.id})\n` +
                         `**<:Comment:1530774457961025618> Reason:** ${reason}\n` +
