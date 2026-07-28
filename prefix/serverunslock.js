@@ -21,7 +21,7 @@ module.exports = {
 
         const lockState = getLockState(message.guild.id);
         if (!lockState) {
-            return errorReply('The server is not currently locked.');
+            return errorReply('<:WarningIcon:1508245066135765034> The server is not currently locked.');
         }
 
         const reason = args.join(' ') || 'No reason provided';

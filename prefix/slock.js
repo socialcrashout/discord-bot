@@ -22,7 +22,7 @@ module.exports = {
         const channel = message.channel;
 
         if (getLock(channel.id) !== undefined) {
-            return errorReply('This channel is already locked. Use `-unslock` first.');
+            return errorReply('<:WarningIcon:1508245066135765034> This channel is already locked. Use `-unslock` first.');
         }
 
         const reason = args.join(' ') || 'No reason provided';
