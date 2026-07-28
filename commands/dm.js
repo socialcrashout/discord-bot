@@ -11,7 +11,7 @@ module.exports = {
     .addStringOption(option => option.setName('message').setDescription('The message to send').setRequired(true)),
 
   async execute(interaction) {
-    const staffRoleIds = ['1529922817578106961'];
+    const staffRoleIds = ['1504311819458580531'];
 
     if (!interaction.member.roles.cache.some(role => staffRoleIds.includes(role.id))) {
       return interaction.reply({
