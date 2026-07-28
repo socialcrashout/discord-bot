@@ -32,10 +32,10 @@ module.exports = {
         const container = new ContainerBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `## <:ShieldCheck:1530775133713731826> DM Command Used!\n` +
-              `-# **<:sig:1530774414436729012> Used by:** ${staff}\n` +
-              `**<:Comment:1530774457961025618> Sent to:** ${user} (${user.id})\n` +
-              `**<:Dot:1530774492412907721> Message:** ${message}`
+              `## <:ShieldCheck:1502514212168274061> DM Command Used!\n` +
+              `-# **<:sig:1502514350014070795> Used by:** ${staff}\n` +
+              `**<:Comment:1502512880493400196> Sent to:** ${user} (${user.id})\n` +
+              `**<:Dot:1502513706347528213> Message:** ${message}`
             )
           );
 
