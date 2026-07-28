@@ -44,7 +44,7 @@ module.exports = {
             container.addSeparatorComponents(new SeparatorBuilder());
             container.addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `**<:Dot:1530774492412907721> Case #${warning.caseNumber}**\n` +
+                    `**<:Dot:1502513706347528213> Case #${warning.caseNumber}**\n` +
                     `**<:sig:1530774414436729012> Moderator:** ${warning.moderatorTag}\n` +
                     `**<:Comment:1530774457961025618> Reason:** ${warning.reason}\n` +
                     `**<:Calendar:1530778367966843010> Date:** <t:${warning.timestamp}:F>`
