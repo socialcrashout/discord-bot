@@ -39,8 +39,8 @@ module.exports = {
                     new TextDisplayBuilder().setContent(
                         `## <:ShieldCheck:1502514212168274061> Ban Command Used! | Case #${caseNumber}\n` +
                         `-# **<:sig:1502514350014070795> Used By:** ${message.author}\n` +
-                        `**<:user:1530778349184618627> User Banned:** ${target.user.tag} (${target.id})\n` +
-                        `**<:Comment:1530774457961025618> Reason:** ${reason}\n` +
+                        `**<:person:1502514200705105981> User Banned:** ${target.user.tag} (${target.id})\n` +
+                        `**<:Comment:1502512880493400196> Reason:** ${reason}\n` +
                         `**<:Dot:1530774492412907721> Channel:** ${message.channel}\n` +
                         `**<:Calendar:1530778367966843010> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
                     )
