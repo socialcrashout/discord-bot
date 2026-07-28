@@ -21,10 +21,10 @@ module.exports = {
         }
 
         const target = message.mentions.members?.first();
-        if (!target) return errorReply('<:warning:1531049700520624278> Please mention a member to warn. Usage: `-warn @user [reason]`');
+        if (!target) return errorReply('<:WarningIcon:1508245066135765034> Please mention a member to warn. Usage: `-warn @user [reason]`');
 
         const reason = args.slice(1).join(' ');
-        if (!reason) return errorReply('<:warning:1531049700520624278> Please provide a reason. Usage: `-warn @user [reason]`');
+        if (!reason) return errorReply('<:WarningIcon:1508245066135765034> Please provide a reason. Usage: `-warn @user [reason]`');
 
         try {
             const caseNumber = await getNextCase(message.guild.id);
