@@ -1,4 +1,4 @@
-const { ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, MessageFlags } = require('discord.js');
+const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 
 const PREFIX = '-';
 
@@ -29,12 +29,11 @@ module.exports = {
             )
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `**Input Amount:** ${inputAmount.toLocaleString()}R\n` +
-                    `**Tax (30%):** ${tax.toLocaleString()}R\n` +
-                    `**Calculated Amount:** ${calculatedAmount.toLocaleString()}R`
+                    `- **Input Amount:** ${inputAmount.toLocaleString()}R\n` +
+                    `- **Tax (30%):** ${tax.toLocaleString()}R\n` +
+                    `- **Calculated Amount:** ${calculatedAmount.toLocaleString()}R`
                 )
             )
-            .addSeparatorComponents(new SeparatorBuilder())
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
                     `To receive exactly **${inputAmount.toLocaleString()}R**, the amount must be **${toReceiveExact.toLocaleString()}R**.`
