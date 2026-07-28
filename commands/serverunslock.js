@@ -57,7 +57,7 @@ module.exports = {
                 new TextDisplayBuilder().setContent(
                     `## <:ShieldCheck:1502514212168274061> Serverunlock Command Used!\n` +
                     `-# **<:sig:1502514350014070795> Used By:** ${interaction.user}\n` +
-                    `**<:user:1530778349184618627> Channels Unlocked:** ${unlockedCount}\n` +
+                    `**<:person:1502514200705105981> Channels Unlocked:** ${unlockedCount}\n` +
                     `**<:Comment:1530774457961025618> Reason:** ${reason}\n` +
                     `**<:Calendar:1530778367966843010> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
                 )
