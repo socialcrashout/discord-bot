@@ -1,0 +1,174 @@
+{
+  "branding": {
+    "name": "Yumi.onl",
+    "iconUrl": "https://yumi.onl/api/files/6a499880b40a6294f3514e0d/raw",
+    "footer": "Aegis Tickets • Enterprise Support System",
+    "colors": {
+      "primary": "#5865F2",
+      "success": "#57F287",
+      "warning": "#FEE75C",
+      "danger": "#ED4245",
+      "neutral": "#2B2D31",
+      "premium": "#EB459E"
+    }
+  },
+
+  "channels": {
+    "ticketCategoryId": "REPLACE_WITH_DISCORD_CATEGORY_ID",
+    "transcriptLogChannelId": "REPLACE_WITH_CHANNEL_ID",
+    "actionLogChannelId": "REPLACE_WITH_CHANNEL_ID",
+    "ratingLogChannelId": "REPLACE_WITH_CHANNEL_ID",
+    "panelChannelId": "REPLACE_WITH_CHANNEL_ID"
+  },
+
+  "limits": {
+    "maxOpenTicketsPerUser": 2,
+    "ticketCreateCooldownSeconds": 60,
+    "buttonInteractionCooldownMs": 1500,
+    "maxAddedUsersPerTicket": 5,
+    "autoCloseInactivityHours": 72,
+    "closeConfirmTimeoutSeconds": 30
+  },
+
+  "naming": {
+    "format": "{category}-{number}",
+    "startingNumber": 1001
+  },
+
+  "sla": {
+    "firstResponseMinutes": {
+      "low": 240,
+      "medium": 120,
+      "high": 60,
+      "urgent": 15
+    }
+  },
+
+  "permissions": {
+    "roles": {
+      "owner": "REPLACE_ROLE_ID",
+      "executive": "REPLACE_ROLE_ID",
+      "management": "REPLACE_ROLE_ID",
+      "administrators": "REPLACE_ROLE_ID",
+      "developers": "REPLACE_ROLE_ID",
+      "publicRelations": "REPLACE_ROLE_ID",
+      "billingSupport": "REPLACE_ROLE_ID",
+      "generalSupport": "REPLACE_ROLE_ID"
+    },
+    "staffRoleIds": [
+      "REPLACE_ROLE_ID"
+    ],
+    "adminOnlyActions": [
+      "delete_ticket",
+      "blacklist_user",
+      "edit_config",
+      "force_close"
+    ]
+  },
+
+  "categories": {
+    "general_support": {
+      "label": "General Support",
+      "emoji": "💬",
+      "description": "Account help, bug reports & general questions",
+      "color": "#5865F2",
+      "accessRoles": ["generalSupport", "management", "administrators", "developers", "owner", "executive"],
+      "priorityDefault": "medium",
+      "form": {
+        "title": "General Support Request",
+        "fields": [
+          { "id": "subject", "label": "Subject", "style": "short", "placeholder": "Brief summary of your issue", "required": true, "minLength": 5, "maxLength": 100 },
+          { "id": "description", "label": "Describe your issue in detail", "style": "paragraph", "placeholder": "What happened? What did you expect to happen?", "required": true, "minLength": 20, "maxLength": 1000 },
+          { "id": "steps", "label": "Steps to reproduce (if a bug)", "style": "paragraph", "placeholder": "1. ... 2. ... 3. ...", "required": false, "maxLength": 500 },
+          { "id": "urgency", "label": "How urgent is this? (Low/Medium/High)", "style": "short", "placeholder": "e.g. Medium", "required": true, "maxLength": 10 }
+        ]
+      }
+    },
+
+    "public_relations": {
+      "label": "Public Relations",
+      "emoji": "📢",
+      "description": "Partnerships, sponsorships, media & community relations",
+      "color": "#57F287",
+      "accessRoles": ["publicRelations", "management", "administrators", "owner", "executive"],
+      "priorityDefault": "medium",
+      "form": {
+        "title": "Public Relations Inquiry",
+        "fields": [
+          { "id": "org_name", "label": "Your Name / Organization", "style": "short", "placeholder": "e.g. Jane Doe — Acme Media", "required": true, "minLength": 2, "maxLength": 80 },
+          { "id": "inquiry_type", "label": "Type of Inquiry", "style": "short", "placeholder": "Partnership / Sponsorship / Media / Event", "required": true, "maxLength": 40 },
+          { "id": "details", "label": "Tell us about the opportunity", "style": "paragraph", "placeholder": "Describe the proposal, timeline, and goals", "required": true, "minLength": 20, "maxLength": 1000 },
+          { "id": "contact", "label": "Best contact method / email", "style": "short", "placeholder": "email@example.com", "required": true, "maxLength": 100 }
+        ]
+      }
+    },
+
+    "management_support": {
+      "label": "Management Support",
+      "emoji": "🛠️",
+      "description": "Staff concerns, internal reports & escalated staff matters",
+      "color": "#FEE75C",
+      "accessRoles": ["management", "administrators", "owner", "executive"],
+      "priorityDefault": "high",
+      "form": {
+        "title": "Management Support Request",
+        "fields": [
+          { "id": "concern_type", "label": "Type of Concern", "style": "short", "placeholder": "Staff conduct / Department issue / Other", "required": true, "maxLength": 60 },
+          { "id": "involved", "label": "Staff/Department involved (if applicable)", "style": "short", "placeholder": "Username(s) or department", "required": false, "maxLength": 100 },
+          { "id": "details", "label": "Full details of the situation", "style": "paragraph", "placeholder": "Be as specific as possible, including dates/times", "required": true, "minLength": 30, "maxLength": 1200 },
+          { "id": "confidential", "label": "Should this remain confidential? (Yes/No)", "style": "short", "placeholder": "Yes", "required": true, "maxLength": 5 }
+        ]
+      }
+    },
+
+    "billing_support": {
+      "label": "Billing Support",
+      "emoji": "💳",
+      "description": "Purchases, refunds, subscriptions & transaction issues",
+      "color": "#EB459E",
+      "accessRoles": ["billingSupport", "management", "administrators", "owner", "executive"],
+      "priorityDefault": "medium",
+      "form": {
+        "title": "Billing Support Request",
+        "fields": [
+          { "id": "order_id", "label": "Order / Transaction ID", "style": "short", "placeholder": "e.g. #A1B2C3 (leave blank if unknown)", "required": false, "maxLength": 40 },
+          { "id": "issue_type", "label": "Issue Type", "style": "short", "placeholder": "Refund / Failed payment / Subscription / Other", "required": true, "maxLength": 40 },
+          { "id": "amount", "label": "Amount involved (if applicable)", "style": "short", "placeholder": "e.g. $25.00 USD", "required": false, "maxLength": 20 },
+          { "id": "details", "label": "Describe the issue", "style": "paragraph", "placeholder": "Include dates, payment method, and what you expect", "required": true, "minLength": 15, "maxLength": 1000 }
+        ]
+      }
+    },
+
+    "executive_support": {
+      "label": "Executive Support",
+      "emoji": "👑",
+      "description": "Confidential, high-priority matters for the Executive Team",
+      "color": "#ED4245",
+      "accessRoles": ["executive", "owner"],
+      "priorityDefault": "urgent",
+      "form": {
+        "title": "Executive Support Request",
+        "fields": [
+          { "id": "subject", "label": "Subject", "style": "short", "placeholder": "Brief, confidential summary", "required": true, "minLength": 5, "maxLength": 100 },
+          { "id": "details", "label": "Full details", "style": "paragraph", "placeholder": "This ticket is only visible to the Executive Team", "required": true, "minLength": 20, "maxLength": 1500 },
+          { "id": "acknowledgement", "label": "Type CONFIRM to acknowledge this is for executive matters only", "style": "short", "placeholder": "CONFIRM", "required": true, "maxLength": 10 }
+        ]
+      }
+    }
+  },
+
+  "priorities": {
+    "low": { "label": "Low", "emoji": "🟢", "color": "#57F287" },
+    "medium": { "label": "Medium", "emoji": "🟡", "color": "#FEE75C" },
+    "high": { "label": "High", "emoji": "🟠", "color": "#EB6D2A" },
+    "urgent": { "label": "Urgent", "emoji": "🔴", "color": "#ED4245" }
+  },
+
+  "cannedReplies": {
+    "greeting": "Hello! Thanks for reaching out. A member of our team will be with you shortly. 👋",
+    "investigating": "Thanks for the details — we're currently looking into this and will update you soon.",
+    "need_more_info": "Could you provide a bit more detail so we can look into this further? Screenshots or timestamps are always helpful.",
+    "resolved": "This issue should now be resolved on our end. Please let us know if you're still experiencing problems!",
+    "closing_soon": "This ticket has been inactive for a while. If we don't hear back within 24 hours it will be automatically closed."
+  }
+}
