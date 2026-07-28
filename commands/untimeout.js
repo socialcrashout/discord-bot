@@ -50,7 +50,7 @@ module.exports = {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
                         `## <:ShieldCheck:1502514212168274061> Untimeout Command Used! | Case #${caseNumber}\n` +
-                        `-# **<:sig:1530774414436729012> Used By:** ${interaction.user}\n` +
+                        `-# **<:sig:1502514350014070795> Used By:** ${interaction.user}\n` +
                         `**<:user:1530778349184618627> User Untimed Out:** ${target.tag} (${target.id})\n` +
                         `**<:Comment:1530774457961025618> Reason:** ${reason}\n` +
                         `**<:Dot:1530774492412907721> Channel:** ${interaction.channel}\n` +
