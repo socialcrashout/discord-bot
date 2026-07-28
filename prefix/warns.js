@@ -14,11 +14,11 @@ module.exports = {
         });
 
         if (!message.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
-            return errorReply('<:warning:1531049700520624278> You do not have permission to view warnings.');
+            return errorReply('<:WarningIcon:1508245066135765034> You do not have permission to view warnings.');
         }
 
         const target = message.mentions.users?.first();
-        if (!target) return errorReply('<:warning:1531049700520624278> Please mention a member. Usage: `-warns @user`');
+        if (!target) return errorReply('<:WarningIcon:1508245066135765034> Please mention a member. Usage: `-warns @user`');
 
         const warnings = getWarningsForUser(message.guild.id, target.id);
 
