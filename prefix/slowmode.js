@@ -53,7 +53,7 @@ module.exports = {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
                         `## <:ShieldCheck:1502514212168274061> Slowmode Command Used!\n` +
-                        `-# **<:sig:1530774414436729012> Used By:** ${message.author}\n` +
+                        `-# **<:sig:1502514350014070795> Used By:** ${message.author}\n` +
                         `**<:user:1530778349184618627> Slowmode Set:** ${seconds === 0 ? 'Disabled' : `${seconds}s`}\n` +
                         `**<:Dot:1530774492412907721> Channel:** ${message.channel}\n` +
                         `**<:Calendar:1530778367966843010> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
