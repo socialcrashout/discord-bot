@@ -45,9 +45,9 @@ module.exports = {
             container.addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
                     `**<:Dot:1502513706347528213> Case #${warning.caseNumber}**\n` +
-                    `**<:sig:1530774414436729012> Moderator:** ${warning.moderatorTag}\n` +
-                    `**<:Comment:1530774457961025618> Reason:** ${warning.reason}\n` +
-                    `**<:Calendar:1530778367966843010> Date:** <t:${warning.timestamp}:F>`
+                    `**<:sig:1502514350014070795> Moderator:** ${warning.moderatorTag}\n` +
+                    `**<:Comment:1502512880493400196> Reason:** ${warning.reason}\n` +
+                    `**<:Calendar:1502513561866473734> Date:** <t:${warning.timestamp}:F>`
                 )
             );
         });
