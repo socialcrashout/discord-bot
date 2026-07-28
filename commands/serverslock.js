@@ -68,7 +68,7 @@ module.exports = {
                     `## <:ShieldCheck:1530775133713731826> Serverslock Command Used!\n` +
                     `-# **<:sig:1530774414436729012> Used By:** ${interaction.user}\n` +
                     `**<:user:1530778349184618627> Channels Locked:** ${lockedCount}\n` +
-                    `**<:Comment:1530774457961025618> Reason:** ${reason}\n` +
+                    `**<:Comment:1502512880493400196> Reason:** ${reason}\n` +
                     `**<:Calendar:1502513561866473734> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
                 )
             );
