@@ -38,7 +38,7 @@ module.exports = {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
                         `## <:ShieldCheck:1502514212168274061> Unslock Command Used!\n` +
-                        `-# **<:sig:1530774414436729012> Used By:** ${message.author}\n` +
+                        `-# **<:sig:1502514350014070795> Used By:** ${message.author}\n` +
                         `**<:Comment:1530774457961025618> Reason:** ${reason}\n` +
                         `**<:Dot:1530774492412907721> Channel:** ${channel}\n` +
                         `**<:Calendar:1530778367966843010> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
