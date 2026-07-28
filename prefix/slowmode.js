@@ -55,8 +55,8 @@ module.exports = {
                         `## <:ShieldCheck:1502514212168274061> Slowmode Command Used!\n` +
                         `-# **<:sig:1502514350014070795> Used By:** ${message.author}\n` +
                         `**<:person:1502514200705105981> Slowmode Set:** ${seconds === 0 ? 'Disabled' : `${seconds}s`}\n` +
-                        `**<:Dot:1530774492412907721> Channel:** ${message.channel}\n` +
-                        `**<:Calendar:1530778367966843010> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
+                        `**<:Dot:1502513706347528213> Channel:** ${message.channel}\n` +
+                        `**<:Calendar:1502513561866473734> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
                     )
                 );
 
