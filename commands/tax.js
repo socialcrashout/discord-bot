@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -6,7 +6,7 @@ module.exports = {
         .setDescription('Roblox tax')
         .addIntegerOption(option =>
             option.setName('amount')
-                .setDescription('The amount to calculate tax for')
+                .setDescription('The input amount')
                 .setRequired(true)
         ),
     async execute(interaction, client) {
@@ -26,12 +26,11 @@ module.exports = {
             )
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `**Input Amount:** ${inputAmount.toLocaleString()}R\n` +
-                    `**Tax (30%):** ${tax.toLocaleString()}R\n` +
-                    `**Calculated Amount:** ${calculatedAmount.toLocaleString()}R`
+                    `- **Input Amount:** ${inputAmount.toLocaleString()}R\n` +
+                    `- **Tax (30%):** ${tax.toLocaleString()}R\n` +
+                    `- **Calculated Amount:** ${calculatedAmount.toLocaleString()}R`
                 )
             )
-            .addSeparatorComponents(new SeparatorBuilder())
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
                     `To receive exactly **${inputAmount.toLocaleString()}R**, the amount must be **${toReceiveExact.toLocaleString()}R**.`
