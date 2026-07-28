@@ -1,6 +1,6 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 
-const ALLOWED_ROLE_ID = '1529922817578106961';
+const ALLOWED_ROLE_ID = '1504311819458580531';
 const LOG_CHANNEL_ID = '1506450870269906944';
 
 module.exports = {
