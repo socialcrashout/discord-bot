@@ -24,7 +24,7 @@ module.exports = {
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
               `## <:ShieldCheck:1502514212168274061> Say Command Used!\n` +
-              `-# **<:sig:1530774414436729012> Used by:** ${message.author}\n` +
+              `-# **<:sig:1502514350014070795> Used by:** ${message.author}\n` +
               `**<:Comment:1530774457961025618> Said:** ${content}\n` +
               `**<:Dot:1530774492412907721> Channel:** ${message.channel}`
             )
