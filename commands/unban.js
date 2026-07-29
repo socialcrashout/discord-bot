@@ -9,7 +9,7 @@ const {
 const getNextCase = require('../utils/getNextCase');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
-const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /unban
+const ALLOWED_ROLE_ID = '1504311819458580531,1504312910862880879'; // Replace with the role ID that can use /unban
 
 module.exports = {
     data: new SlashCommandBuilder()
