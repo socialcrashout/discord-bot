@@ -30,7 +30,7 @@ const CONFIG = {
         title: "<:confetti:1502514534298943509>",     // shown next to the prize in the title line
         enter: "<:Star:1531882389062684792>",     // shown on the "Enter" button
         ended: "<:Lock:1502513716384632873>",     // shown on the disabled "Ended" button
-        entries: "👥",   // shown next to the entries count
+        entries: "<:Member:1502514198595240076>",   // shown next to the entries count
         duration: "⏰",  // shown next to duration / ends-at
         winner: "🏆",    // shown next to winner(s)
     },
