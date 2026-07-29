@@ -1,7 +1,15 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    MessageFlags,
+} = require('discord.js');
+
 const getNextCase = require('../utils/getNextCase');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /unban
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -19,27 +27,38 @@ module.exports = {
 
     async execute(interaction) {
         const errorReply = (text) => interaction.reply({
-            components: [new ContainerBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(text)
-            )],
+            components: [
+                new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(text)
+                )
+            ],
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
+        // Permission check
         if (!interaction.member.permissions.has(PermissionFlagsBits.BanMembers)) {
             return errorReply('You do not have permission to unban members.');
+        }
+
+        // Role restriction
+        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return errorReply('You do not have the required role to use this command.');
         }
 
         const userId = interaction.options.getString('userid').trim();
         const reason = interaction.options.getString('reason') || 'No reason provided';
 
         if (!/^\d{17,20}$/.test(userId)) {
-            return errorReply('That doesn\'t look like a valid user ID. Right-click the user (or find them in the ban list) and copy their ID.');
+            return errorReply(
+                'That doesn\'t look like a valid user ID. Right-click the user (or find them in the ban list) and copy their ID.'
+            );
         }
 
         try {
-            // Confirm they're actually banned first, and grab their tag for the log
+            // Confirm they're actually banned first
             const bans = await interaction.guild.bans.fetch();
             const banEntry = bans.get(userId);
+
             if (!banEntry) {
                 return errorReply('That user is not currently banned.');
             }
@@ -51,6 +70,7 @@ module.exports = {
 
             // Log to mod-log channel
             const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+
             if (logChannel) {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
@@ -79,7 +99,11 @@ module.exports = {
                 )
             );
 
-            await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+            await interaction.reply({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2,
+            });
+
         } catch (error) {
             console.error(error);
             await errorReply('Something went wrong while trying to unban that user.');
