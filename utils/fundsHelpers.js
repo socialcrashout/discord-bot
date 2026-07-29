@@ -1,4 +1,11 @@
-const { EmbedBuilder } = require('discord.js');
+const {
+    ContainerBuilder,
+    SectionBuilder,
+    TextDisplayBuilder,
+    SeparatorBuilder,
+    SeparatorSpacingSize,
+    ThumbnailBuilder,
+} = require('discord.js');
 const noblox = require('noblox.js');
 
 /**
@@ -16,32 +23,59 @@ function hasPermission(member) {
     return member.roles.cache.some((role) => ALLOWED_ROLE_IDS.includes(role.id));
 }
 
-function buildNoPermissionEmbed() {
-    return new EmbedBuilder()
-        .setColor('#ED4245')
-        .setTitle('🔒 Access Denied')
-        .setDescription("You don't have permission to use this command.")
-        .setFooter({ text: 'Contact an administrator if you think this is a mistake.' })
-        .setTimestamp();
+function buildNoPermissionContainer() {
+    return new ContainerBuilder()
+        .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent('## 🔒 Access Denied')
+        )
+        .addSeparatorComponents(
+            new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
+        )
+        .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent("You don't have permission to use this command.")
+        )
+        .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent('-# Contact an administrator if you think this is a mistake.')
+        );
 }
 
-function buildFundsEmbed({ groupId, groupName, groupFunds, pending, iconURL }) {
+function buildFundsContainer({ groupId, groupName, groupFunds, pending, iconURL }) {
     const total = groupFunds + pending;
+    const container = new ContainerBuilder();
 
-    return new EmbedBuilder()
-        .setColor('#57F287')
-        .setAuthor({
-            name: groupName ? `${groupName} — Group Funds` : `Group Funds — ID ${groupId}`,
-            iconURL,
-        })
-        .setThumbnail(iconURL || null)
-        .addFields(
-            { name: '💰 Current Funds', value: `**R$${groupFunds.toLocaleString()}**`, inline: true },
-            { name: '⏳ Pending Revenue', value: `**R$${pending.toLocaleString()}**`, inline: true },
-            { name: '📊 Total', value: `**R$${total.toLocaleString()}**`, inline: true }
+    const headerText = new TextDisplayBuilder().setContent(
+        `## ${groupName ? `${groupName} — Group Funds` : `Group Funds — ID ${groupId}`}`
+    );
+
+    if (iconURL) {
+        container.addSectionComponents(
+            new SectionBuilder()
+                .addTextDisplayComponents(headerText)
+                .setThumbnailAccessory(new ThumbnailBuilder().setURL(iconURL))
+        );
+    } else {
+        container.addTextDisplayComponents(headerText);
+    }
+
+    container.addSeparatorComponents(
+        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
+    );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            `💰 **Current:** R$${groupFunds.toLocaleString()}   ⏳ **Pending:** R$${pending.toLocaleString()}   📊 **Total:** R$${total.toLocaleString()}`
         )
-        .setFooter({ text: 'Roblox Group Funds' })
-        .setTimestamp();
+    );
+
+    container.addSeparatorComponents(
+        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
+    );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent('-# Roblox Group Funds')
+    );
+
+    return container;
 }
 
 async function fetchFundsData(groupId) {
@@ -81,8 +115,8 @@ function errorMessage(err) {
 
 module.exports = {
     hasPermission,
-    buildNoPermissionEmbed,
-    buildFundsEmbed,
+    buildNoPermissionContainer,
+    buildFundsContainer,
     fetchFundsData,
     errorMessage,
 };

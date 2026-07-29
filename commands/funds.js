@@ -1,8 +1,8 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const {
     hasPermission,
-    buildNoPermissionEmbed,
-    buildFundsEmbed,
+    buildNoPermissionContainer,
+    buildFundsContainer,
     fetchFundsData,
     errorMessage,
 } = require('../utils/fundsHelpers');
@@ -14,7 +14,10 @@ module.exports = {
 
     execute: async (interaction, client) => {
         if (!hasPermission(interaction.member)) {
-            return interaction.reply({ embeds: [buildNoPermissionEmbed()], ephemeral: true });
+            return interaction.reply({
+                components: [buildNoPermissionContainer()],
+                flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+            });
         }
 
         await interaction.reply({ content: '💸 Fetching group funds...', ephemeral: true });
@@ -22,7 +25,11 @@ module.exports = {
         const groupId = process.env.GROUP_ID;
         try {
             const data = await fetchFundsData(groupId);
-            await interaction.editReply({ content: null, embeds: [buildFundsEmbed(data)] });
+            await interaction.editReply({
+                content: null,
+                components: [buildFundsContainer(data)],
+                flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+            });
         } catch (err) {
             await interaction.editReply({ content: errorMessage(err) });
         }
