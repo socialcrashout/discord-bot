@@ -47,7 +47,7 @@ module.exports = {
         const growth30 = calculateGrowth(30);
 
         const embed = new EmbedBuilder()
-            .setColor("null")
+            .setColor(null)
             .setDescription(`
 <:person:1502514200705105981> **Total Members:** ${totalMembers.toLocaleString()}
 <:boost:1532100194840219849> **Server Boosts:** ${boosts}
