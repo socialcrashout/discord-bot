@@ -8,7 +8,7 @@ const {
     errorMessage,
 } = require('../utils/fundsHelpers');
 
-const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use -funds
+const ALLOWED_ROLE_ID = '1504311819458580531'; // Replace with the role ID that can use -funds
 
 module.exports = {
     name: 'funds',
