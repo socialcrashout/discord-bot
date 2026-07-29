@@ -1,5 +1,5 @@
 const { Events } = require("discord.js");
-const giveaways = require("../lib/giveawayManager");
+const giveaways = require("../utils/giveawayManager");
 
 module.exports = {
     name: Events.ClientReady,
