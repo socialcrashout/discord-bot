@@ -1,5 +1,15 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, MessageFlags } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    SeparatorBuilder,
+    MessageFlags,
+} = require('discord.js');
+
 const { getWarningsForUser } = require('../utils/warnings');
+
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /warns
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -13,14 +23,22 @@ module.exports = {
 
     async execute(interaction) {
         const errorReply = (text) => interaction.reply({
-            components: [new ContainerBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(text)
-            )],
+            components: [
+                new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(text)
+                )
+            ],
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
+        // Permission check
         if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
             return errorReply('You do not have permission to view warnings.');
+        }
+
+        // Role restriction
+        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return errorReply('You do not have the required role to use this command.');
         }
 
         const target = interaction.options.getUser('target');
@@ -28,9 +46,11 @@ module.exports = {
 
         if (warnings.length === 0) {
             return interaction.reply({
-                components: [new ContainerBuilder().addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`**${target.tag}** has no warnings.`)
-                )],
+                components: [
+                    new ContainerBuilder().addTextDisplayComponents(
+                        new TextDisplayBuilder().setContent(`**${target.tag}** has no warnings.`)
+                    )
+                ],
                 flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
             });
         }
@@ -45,7 +65,7 @@ module.exports = {
         // Sort newest first
         const sorted = [...warnings].sort((a, b) => b.timestamp - a.timestamp);
 
-        sorted.forEach((warning, index) => {
+        sorted.forEach((warning) => {
             container.addSeparatorComponents(new SeparatorBuilder());
             container.addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
