@@ -35,6 +35,7 @@ const CONFIG = {
         winnersLineEnded: "{winnerEmoji} **Winners:** {winnersMentions}",
         noWinnersLine: "{winnerEmoji} **Winners:** No valid entries",
         requirementsLine: "**Requirements:**\n{requirements}",
+        idLine: "<:Save:1502514208019972217> **Giveaway ID:** {id}",
         enterCallToAction: "Click the button below to enter!",
         announceWin: "{titleEmoji} Congratulations {winnersMentions} on winning **{prize}**!",
         announceNoWinners: "😕 The giveaway for **{prize}** ended with no valid entries.",
