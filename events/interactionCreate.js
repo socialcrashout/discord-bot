@@ -58,7 +58,6 @@ module.exports = {
         hostId: interaction.user.id,
         hostName: interaction.user.username,
         pingType,
-        bannerUrl: null,
         requirements: null,
         entries: [],
         ended: false,
@@ -67,21 +66,21 @@ module.exports = {
       const row = new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(`gw_req_select:${draftId}`)
-          .setPlaceholder("Add entry requirements or a banner image?")
+          .setPlaceholder("Add entry requirements?")
           .addOptions(
-            { label: "Yes — add requirements/banner", value: "yes", emoji: "✅" },
+            { label: "Yes — add requirements", value: "yes", emoji: "📋" },
             { label: "No — post as is", value: "no", emoji: "🚫" },
           )
       );
 
       return interaction.reply({
-        content: `Setting up **${prize}** in ${channel} — want to add entry requirements or a banner image?`,
+        content: `Setting up **${prize}** in ${channel} — want to add entry requirements?`,
         components: [row],
         ephemeral: true,
       });
     }
 
-    // ---- Step 2a: "requirements/banner?" select menu ----
+    // ---- Step 2a: "requirements?" select menu ----
     if (interaction.isStringSelectMenu() && interaction.customId.startsWith("gw_req_select:")) {
       const draftId = interaction.customId.split(":")[1];
       const draft = giveaways.getDraft(draftId);
@@ -107,7 +106,7 @@ module.exports = {
 
         const modal = new ModalBuilder()
           .setCustomId(`gw_req_modal:${draftId}`)
-          .setTitle("Requirements & Banner");
+          .setTitle("Entry Requirements");
 
         const requirements = new TextInputBuilder()
           .setCustomId("requirements_text")
@@ -117,24 +116,15 @@ module.exports = {
           .setRequired(false)
           .setMaxLength(1000);
 
-        const banner = new TextInputBuilder()
-          .setCustomId("banner_url")
-          .setLabel("Banner image URL")
-          .setStyle(TextInputStyle.Short)
-          .setPlaceholder("Leave blank for no banner")
-          .setRequired(false)
-          .setMaxLength(500);
-
         modal.addComponents(
           new ActionRowBuilder().addComponents(requirements),
-          new ActionRowBuilder().addComponents(banner),
         );
 
         return interaction.showModal(modal);
       }
     }
 
-    // ---- Step 2b: requirements/banner form submission ----
+    // ---- Step 2b: requirements form submission ----
     if (interaction.isModalSubmit() && interaction.customId.startsWith("gw_req_modal:")) {
       const draftId = interaction.customId.split(":")[1];
       const draft = giveaways.getDraft(draftId);
@@ -143,9 +133,7 @@ module.exports = {
       }
 
       const requirements = interaction.fields.getTextInputValue("requirements_text").trim();
-      const banner = interaction.fields.getTextInputValue("banner_url").trim();
       draft.requirements = requirements || null;
-      draft.bannerUrl = banner || null;
 
       try {
         const msg = await giveaways.postGiveaway(client, draft);
@@ -172,7 +160,6 @@ module.exports = {
       const winnersRaw = interaction.fields.getTextInputValue("winners").trim();
       const durationRaw = interaction.fields.getTextInputValue("duration").trim();
       const requirementsRaw = interaction.fields.getTextInputValue("requirements").trim();
-      const bannerRaw = interaction.fields.getTextInputValue("banner").trim();
 
       const updates = {};
 
@@ -193,7 +180,6 @@ module.exports = {
       }
 
       if (requirementsRaw) updates.requirements = requirementsRaw.toLowerCase() === "none" ? null : requirementsRaw;
-      if (bannerRaw) updates.bannerUrl = bannerRaw.toLowerCase() === "none" ? null : bannerRaw;
 
       if (Object.keys(updates).length === 0) {
         return interaction.reply({ content: "You didn't change anything.", ephemeral: true });
@@ -223,11 +209,12 @@ module.exports = {
         ephemeral: true,
       });
 
+      // Components V2 — no embeds/accent color, just the container rebuilt
+      // with the updated entry count.
       try {
-        await interaction.message.edit({
-          embeds: [giveaways.buildEmbed(result.giveaway, false)],
-          components: giveaways.buildComponents(result.giveaway, false),
-        });
+        await interaction.message.edit(
+          giveaways.containerPayload(giveaways.buildGiveawayContainer(result.giveaway, false))
+        );
       } catch (err) {
         console.error("[giveaways] failed to update entry count:", err);
       }
