@@ -1,6 +1,14 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    MessageFlags,
+} = require('discord.js');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /purge
+
 const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
 
 function sleep(ms) {
@@ -33,9 +41,9 @@ async function deleteMessages(channel, messages) {
         try {
             await msg.delete();
             deletedCount++;
-            await sleep(1000); // avoid hitting rate limits on individual deletes
+            await sleep(1000); // avoid hitting rate limits
         } catch (err) {
-            // message may already be gone, or delete failed — skip it
+            // Ignore failed deletes
         }
     }
 
@@ -64,31 +72,46 @@ module.exports = {
 
     async execute(interaction) {
         const errorReply = (text) => interaction.reply({
-            components: [new ContainerBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(text)
-            )],
+            components: [
+                new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(text)
+                )
+            ],
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
+        // Permission check
         if (!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
             return errorReply('You do not have permission to manage messages.');
+        }
+
+        // Role restriction
+        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return errorReply('You do not have the required role to use this command.');
         }
 
         const amount = interaction.options.getInteger('amount');
         const target = interaction.options.getUser('target');
         const reason = interaction.options.getString('reason') || 'No reason provided';
 
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        await interaction.deferReply({
+            flags: MessageFlags.Ephemeral,
+        });
 
         try {
             const fetched = await interaction.channel.messages.fetch({ limit: 100 });
+
             const toDelete = target
                 ? fetched.filter(m => m.author.id === target.id).first(amount)
                 : [...fetched.values()].slice(0, amount);
 
-            const deletedCount = await deleteMessages(interaction.channel, new Map(toDelete.map(m => [m.id, m])));
+            const deletedCount = await deleteMessages(
+                interaction.channel,
+                new Map(toDelete.map(m => [m.id, m]))
+            );
 
             const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+
             if (logChannel) {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
@@ -111,9 +134,13 @@ module.exports = {
             await interaction.editReply({
                 content: `✅ Deleted ${deletedCount} message(s)${target ? ` from ${target.tag}` : ''}`,
             });
+
         } catch (error) {
             console.error(error);
-            await interaction.editReply({ content: 'Something went wrong while purging messages.' });
+
+            await interaction.editReply({
+                content: 'Something went wrong while purging messages.',
+            });
         }
     },
 };
