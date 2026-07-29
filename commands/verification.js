@@ -85,7 +85,6 @@ function buildVerificationContainer() {
       .setCustomId(VERIFY_BUTTON_ID)
       .setLabel('Verify')
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji('✅')
   );
   container.addActionRowComponents(row);
 
