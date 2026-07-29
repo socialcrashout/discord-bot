@@ -8,7 +8,9 @@ const {
     errorMessage,
 } = require('../utils/fundsHelpers');
 
-const ALLOWED_ROLE_ID = '1504311819458580531'; // Replace with the role ID that can use -funds
+const ALLOWED_ROLE_IDS = [
+    '1504311819458580531'
+];
 
 module.exports = {
     name: 'funds',
@@ -16,17 +18,11 @@ module.exports = {
     execute: async (message, args, client) => {
 
         // Permission check
-        if (!hasPermission(message.member)) {
+        if (!message.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id))) {
             return message.reply({
-                components: [buildNoPermissionContainer()],
-                flags: MessageFlags.IsComponentsV2,
-            });
-        }
-
-        // Role restriction
-        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
-            return message.reply({
-                components: [buildNoPermissionContainer('You do not have the required role to use this command.')],
+                components: [
+                    buildNoPermissionContainer('You do not have the required role to use this command.')
+                ],
                 flags: MessageFlags.IsComponentsV2,
             });
         }
