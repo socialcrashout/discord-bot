@@ -31,11 +31,11 @@ module.exports = {
                 .setDescription('Your rating (1-5)')
                 .setRequired(true)
                 .addChoices(
-                    { name: '1 — Poor', value: '1' },
-                    { name: '2 — Below average', value: '2' },
-                    { name: '3 — Average', value: '3' },
-                    { name: '4 — Good', value: '4' },
-                    { name: '5 — Excellent', value: '5' },
+                    { name: '1 — Needs Improvement', value: '1' },
+                    { name: '2 — Below Expectations', value: '2' },
+                    { name: '3 — Meets Expectations', value: '3' },
+                    { name: '4 — Exceeds Expectations', value: '4' },
+                    { name: '5 — Outstanding', value: '5' },
                 ))
         .addStringOption(option =>
             option.setName('reason')
@@ -98,7 +98,6 @@ module.exports = {
             );
 
         await feedbackChannel.send({
-            content: `${staff}`,
             allowedMentions: { users: [staff.id] },
             components: [container],
             flags: MessageFlags.IsComponentsV2,
