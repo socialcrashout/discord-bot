@@ -8,7 +8,7 @@ const {
 
 const { getLogsForUser } = require('../utils/modlogs');
 
-const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /modlogs
+const ALLOWED_ROLE_ID = '1504311819458580531,1504313264576925757,1504312910862880879,1504320706341502996'; // Replace with the role ID that can use /modlogs
 
 const TYPE_LABELS = {
     warn: 'Warn',
