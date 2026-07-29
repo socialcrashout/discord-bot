@@ -1,6 +1,8 @@
 const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
+const REQUIRED_ROLE_ID = 'YOUR_ROLE_ID';
+
 const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
 
 function sleep(ms) {
@@ -33,10 +35,8 @@ async function deleteMessages(channel, messages) {
         try {
             await msg.delete();
             deletedCount++;
-            await sleep(1000); // avoid hitting rate limits on individual deletes
-        } catch (err) {
-            // message may already be gone, or delete failed — skip it
-        }
+            await sleep(1000);
+        } catch (err) {}
     }
 
     return deletedCount;
@@ -53,6 +53,10 @@ module.exports = {
             )],
             flags: MessageFlags.IsComponentsV2,
         });
+
+        if (!message.member.roles.cache.has(REQUIRED_ROLE_ID)) {
+            return errorReply('<:warning:1531049700520624278> You do not have permission to use this command.');
+        }
 
         if (!message.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
             return errorReply('You do not have permission to manage messages.');
@@ -71,13 +75,18 @@ module.exports = {
 
         try {
             const fetched = await message.channel.messages.fetch({ limit: 100 });
+
             const toDelete = target
                 ? fetched.filter(m => m.author.id === target.id).first(amount)
                 : [...fetched.values()].slice(0, amount);
 
-            const deletedCount = await deleteMessages(message.channel, new Map(toDelete.map(m => [m.id, m])));
+            const deletedCount = await deleteMessages(
+                message.channel,
+                new Map(toDelete.map(m => [m.id, m]))
+            );
 
             const logChannel = message.guild.channels.cache.get(LOG_CHANNEL_ID);
+
             if (logChannel) {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
@@ -105,7 +114,9 @@ module.exports = {
                 )],
                 flags: MessageFlags.IsComponentsV2,
             });
+
             setTimeout(() => confirmation.delete().catch(() => {}), 4000);
+
         } catch (error) {
             console.error(error);
             await message.channel.send('Something went wrong while purging messages.');
