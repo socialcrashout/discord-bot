@@ -1,7 +1,7 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 const { getLock, clearLock } = require('../utils/channelLock');
 
-const ALLOWED_ROLE_ID = 'YOUR_ROLE_ID_HERE';
+const ALLOWED_ROLE_ID = '1504311819458580531,1504313264576925757,1504312910862880879';
 const LOG_CHANNEL_ID = '1506450870269906944';
 
 module.exports = {
