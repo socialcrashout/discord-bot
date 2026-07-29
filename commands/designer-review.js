@@ -16,7 +16,7 @@ const BANNER_IMAGE_URL = 'https://yumi.onl/api/files/6a697f51721650f7b5eb85c9/ra
 const FOOTER_IMAGE_URL = 'https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw';
 // ─────────────────────────────────────────────────────────────────────────
 
-const STAR_EMOJI = '<:Star:1502514214835847348>';
+const STAR_EMOJI = '<:Star:1531882389062684792>';
 
 module.exports = {
     data: new SlashCommandBuilder()
