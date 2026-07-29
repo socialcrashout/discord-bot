@@ -1,6 +1,14 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags, ChannelType } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    MessageFlags,
+    ChannelType,
+} = require('discord.js');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /slowmode
 
 // Parses strings like "10s", "5m", "1h" into seconds. Discord's max slowmode is 6 hours.
 function parseDuration(input) {
@@ -35,31 +43,46 @@ module.exports = {
 
     async execute(interaction) {
         const errorReply = (text) => interaction.reply({
-            components: [new ContainerBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(text)
-            )],
+            components: [
+                new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(text)
+                )
+            ],
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
+        // Permission check
         if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
             return errorReply('You do not have permission to manage channels.');
+        }
+
+        // Role restriction
+        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return errorReply('You do not have the required role to use this command.');
         }
 
         const durationInput = interaction.options.getString('duration');
         const channel = interaction.options.getChannel('channel') || interaction.channel;
 
         let seconds;
+
         if (durationInput.trim() === '0') {
             seconds = 0;
         } else {
             seconds = parseDuration(durationInput);
-            if (seconds === null) return errorReply('Invalid duration. Use a format like `10s`, `5m`, `1h` (max 6h), or `0` to disable.');
+
+            if (seconds === null) {
+                return errorReply(
+                    'Invalid duration. Use a format like `10s`, `5m`, `1h` (max 6h), or `0` to disable.'
+                );
+            }
         }
 
         try {
             await channel.setRateLimitPerUser(seconds);
 
             const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+
             if (logChannel) {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
@@ -86,7 +109,11 @@ module.exports = {
                 )
             );
 
-            await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+            await interaction.reply({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2,
+            });
+
         } catch (error) {
             console.error(error);
             await errorReply('Something went wrong while setting slowmode.');
