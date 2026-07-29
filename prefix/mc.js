@@ -40,7 +40,7 @@ Past month: (+128)
 
 **Bringing your vision to life.**
             `)
-            .setImage("YOUR_BANNER_IMAGE_URL");
+            .setImage("https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw");
 
         await message.channel.send({
             embeds: [embed]
