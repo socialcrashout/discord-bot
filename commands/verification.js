@@ -18,11 +18,11 @@
 require('dotenv').config();
 
 const CONFIG = {
-  TOKEN: process.env.DISCORD_TOKEN,                      // bot token, loaded from .env
+  TOKEN: process.env.TOKEN,                      // bot token, loaded from .env
   GUILD_ID: '1502510812441608222',               // .mode server id (from your ticket link)
   TICKET_CHANNEL_ID: '1502793438754770976',      // #tickets, used in the body text
-  VERIFIED_ROLE_ID: '1504325783634841600',     // role granted on verify
-  LOG_CHANNEL_ID: '1532078127084343407',         // where verification logs are posted
+  VERIFIED_ROLE_ID: 'YOUR_VERIFIED_ROLE_ID',     // role granted on verify
+  LOG_CHANNEL_ID: 'YOUR_LOG_CHANNEL_ID',         // where verification logs are posted
   BANNER_URL: 'https://yumi.onl/api/files/6a6a38b554d6927723c15003/raw',
   FOOTER_URL: 'https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw',
   DOT_EMOJI: '<:Dot:1502513706347528213>',
@@ -156,7 +156,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       components: [container],
       flags: MessageFlags.IsComponentsV2,
     });
-    await interaction.reply({ content: 'Verification message posted.', ephemeral: true });
+    await interaction.reply({ content: 'Verification message posted.', flags: MessageFlags.Ephemeral });
     return;
   }
 
@@ -168,7 +168,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       if (member.roles.cache.has(CONFIG.VERIFIED_ROLE_ID)) {
         await interaction.reply({
           content: 'You are already verified.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -177,7 +177,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       await interaction.reply({
         content: '✅ You have been verified! You now have full access to the server.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
 
       // Log success
@@ -191,7 +191,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       await interaction.reply({
         content: 'Something went wrong while verifying you. Please open a ticket for help.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
 
       try {
