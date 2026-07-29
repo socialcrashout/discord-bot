@@ -36,7 +36,7 @@ const {
 // ---------------------------------------------------------
 const CONFIG = {
   TICKET_CHANNEL_ID: '1502793438754770976',      // #tickets
-  VERIFIED_ROLE_ID: 'YOUR_VERIFIED_ROLE_ID',     // role granted on verify
+  VERIFIED_ROLE_ID: '1504325783634841600',     // role granted on verify
   LOG_CHANNEL_ID: 'YOUR_LOG_CHANNEL_ID',         // verification log channel
   BANNER_URL: 'https://yumi.onl/api/files/6a6a38b554d6927723c15003/raw',
   FOOTER_URL: 'https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw',
