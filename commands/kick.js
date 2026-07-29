@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 const getNextCase = require('../utils/getNextCase');
+const { addModLog } = require('../utils/modlogs');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
 
@@ -46,6 +47,18 @@ module.exports = {
             await member.kick(reason);
 
             const caseNumber = await getNextCase(interaction.guild.id);
+            const timestamp = Math.floor(Date.now() / 1000);
+
+            addModLog(interaction.guild.id, {
+                caseNumber,
+                type: 'kick',
+                userId: target.id,
+                userTag: target.tag,
+                moderatorId: interaction.user.id,
+                moderatorTag: interaction.user.tag,
+                reason,
+                timestamp,
+            });
 
             // Log to mod-log channel
             const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
@@ -57,7 +70,7 @@ module.exports = {
                         `**<:person:1502514200705105981> User Kicked:** ${target.tag} (${target.id})\n` +
                         `**<:Comment:1502512880493400196> Reason:** ${reason}\n` +
                         `**<:Dot:1502513706347528213> Channel:** ${interaction.channel}\n` +
-                        `**<:Calendar:1502513561866473734> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
+                        `**<:Calendar:1502513561866473734> Timestamp:** <t:${timestamp}:F>`
                     )
                 );
 
