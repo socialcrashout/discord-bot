@@ -18,7 +18,7 @@
 require('dotenv').config();
 
 const CONFIG = {
-  TOKEN: process.env.TOKEN,                      // bot token, loaded from .env
+  TOKEN: process.env.DISCORD_TOKEN,                      // bot token, loaded from .env
   GUILD_ID: '1502510812441608222',               // .mode server id (from your ticket link)
   TICKET_CHANNEL_ID: '1502793438754770976',      // #tickets, used in the body text
   VERIFIED_ROLE_ID: 'YOUR_VERIFIED_ROLE_ID',     // role granted on verify
