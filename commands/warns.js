@@ -1,6 +1,5 @@
 const {
     SlashCommandBuilder,
-    PermissionFlagsBits,
     ContainerBuilder,
     TextDisplayBuilder,
     SeparatorBuilder,
@@ -9,19 +8,26 @@ const {
 
 const { getWarningsForUser } = require('../utils/warnings');
 
-const ALLOWED_ROLE_ID = '1504320706341502996,1504313264576925757,1504312910862880879,1504311819458580531'; // Replace with the role ID that can use /warns
+const ALLOWED_ROLE_IDS = [
+    '1504320706341502996',
+    '1504313264576925757',
+    '1504312910862880879',
+    '1504311819458580531'
+];
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('warns')
         .setDescription('View all warnings a member has')
         .addUserOption(option =>
-            option.setName('target')
+            option
+                .setName('target')
                 .setDescription('The member to check')
-                .setRequired(true))
-        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
+                .setRequired(true)
+        ),
 
     async execute(interaction) {
+
         const errorReply = (text) => interaction.reply({
             components: [
                 new ContainerBuilder().addTextDisplayComponents(
@@ -31,42 +37,46 @@ module.exports = {
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
-        // Permission check
-        if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
-            return errorReply('You do not have permission to view warnings.');
-        }
-
         // Role restriction
-        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+        if (!ALLOWED_ROLE_IDS.some(role => interaction.member.roles.cache.has(role))) {
             return errorReply('You do not have the required role to use this command.');
         }
 
         const target = interaction.options.getUser('target');
-        const warnings = getWarningsForUser(interaction.guild.id, target.id);
+
+        const warnings = getWarningsForUser(
+            interaction.guild.id,
+            target.id
+        );
 
         if (warnings.length === 0) {
             return interaction.reply({
                 components: [
                     new ContainerBuilder().addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(`**${target.tag}** has no warnings.`)
+                        new TextDisplayBuilder().setContent(
+                            `**${target.tag}** has no warnings.`
+                        )
                     )
                 ],
                 flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
             });
         }
 
-        const container = new ContainerBuilder().addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(
-                `## <:ShieldCheck:1530775133713731826> Warnings for ${target.tag}\n` +
-                `-# **<:user:1530778349184618627> Total Warnings:** ${warnings.length}`
-            )
-        );
+        const container = new ContainerBuilder()
+            .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(
+                    `## <:ShieldCheck:1530775133713731826> Warnings for ${target.tag}\n` +
+                    `-# **<:user:1530778349184618627> Total Warnings:** ${warnings.length}`
+                )
+            );
 
-        // Sort newest first
-        const sorted = [...warnings].sort((a, b) => b.timestamp - a.timestamp);
+        const sorted = [...warnings].sort(
+            (a, b) => b.timestamp - a.timestamp
+        );
 
         sorted.forEach((warning) => {
             container.addSeparatorComponents(new SeparatorBuilder());
+
             container.addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
                     `**<:Dot:1530774492412907721> Case #${warning.caseNumber}**\n` +
