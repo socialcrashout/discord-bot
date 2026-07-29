@@ -7,7 +7,12 @@ const {
 } = require('discord.js');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
-const ALLOWED_ROLE_ID = '1504311819458580531,1504312910862880879,1504313264576925757'; // Replace with the role ID that can use /purge
+
+const ALLOWED_ROLE_IDS = [
+    '1504311819458580531',
+    '1504312910862880879',
+    '1504313264576925757'
+];
 
 const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
 
@@ -15,8 +20,6 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Deletes a batch of messages, using fast bulk delete for anything under 14 days
-// old, and falling back to slow one-by-one deletion (no age limit) for the rest.
 async function deleteMessages(channel, messages) {
     const now = Date.now();
     const recent = [];
@@ -41,10 +44,8 @@ async function deleteMessages(channel, messages) {
         try {
             await msg.delete();
             deletedCount++;
-            await sleep(1000); // avoid hitting rate limits
-        } catch (err) {
-            // Ignore failed deletes
-        }
+            await sleep(1000);
+        } catch {}
     }
 
     return deletedCount;
@@ -80,13 +81,11 @@ module.exports = {
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
-        // Permission check
         if (!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
             return errorReply('You do not have permission to manage messages.');
         }
 
-        // Role restriction
-        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+        if (!ALLOWED_ROLE_IDS.some(roleId => interaction.member.roles.cache.has(roleId))) {
             return errorReply('You do not have the required role to use this command.');
         }
 
