@@ -1,6 +1,5 @@
 const {
     SlashCommandBuilder,
-    PermissionFlagsBits,
     ContainerBuilder,
     TextDisplayBuilder,
     MessageFlags,
@@ -9,7 +8,11 @@ const {
 const getNextCase = require('../utils/getNextCase');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
-const ALLOWED_ROLE_ID = '1504311819458580531,1504312910862880879'; // Replace with the role ID that can use /unban
+
+const ALLOWED_ROLE_IDS = [
+    '1504311819458580531',
+    '1504312910862880879'
+];
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -22,8 +25,7 @@ module.exports = {
         .addStringOption(option =>
             option.setName('reason')
                 .setDescription('Reason for the unban')
-                .setRequired(false))
-        .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
+                .setRequired(false)),
 
     async execute(interaction) {
         const errorReply = (text) => interaction.reply({
@@ -35,13 +37,8 @@ module.exports = {
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
-        // Permission check
-        if (!interaction.member.permissions.has(PermissionFlagsBits.BanMembers)) {
-            return errorReply('You do not have permission to unban members.');
-        }
-
         // Role restriction
-        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+        if (!interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id))) {
             return errorReply('You do not have the required role to use this command.');
         }
 
@@ -50,12 +47,11 @@ module.exports = {
 
         if (!/^\d{17,20}$/.test(userId)) {
             return errorReply(
-                'That doesn\'t look like a valid user ID. Right-click the user (or find them in the ban list) and copy their ID.'
+                "That doesn't look like a valid user ID. Right-click the user and copy their ID."
             );
         }
 
         try {
-            // Confirm they're actually banned first
             const bans = await interaction.guild.bans.fetch();
             const banEntry = bans.get(userId);
 
@@ -68,7 +64,6 @@ module.exports = {
             const caseNumber = await getNextCase(interaction.guild.id);
             const userTag = banEntry.user.tag;
 
-            // Log to mod-log channel
             const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
 
             if (logChannel) {
