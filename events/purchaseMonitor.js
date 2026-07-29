@@ -175,7 +175,7 @@ function listenForPurchases(client) {
 // ------------------------- ENTRY POINT -------------------------
 
 module.exports = {
-    name: 'ready',
+    name: 'clientReady', // renamed from 'ready' (deprecated in discord.js v14, removed in v15)
     once: true,
     execute: async (client) => {
         if (!GROUP_ID) {
