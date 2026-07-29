@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+
 const {
     SlashCommandBuilder,
     PermissionFlagsBits,
@@ -8,103 +11,167 @@ const {
     MediaGalleryBuilder,
     MediaGalleryItemBuilder,
     MessageFlags,
-} = require('discord.js');
+} = require("discord.js");
 
-// ── Configure these ────────────────────────────────────────────────────────
-const STAFF_FEEDBACK_CHANNEL_ID = '1502529739997446245';
-const BANNER_IMAGE_URL = 'https://yumi.onl/api/files/6a697f51721650f7b5eb85c9/raw';
-const FOOTER_IMAGE_URL = 'https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw';
-// ─────────────────────────────────────────────────────────────────────────
+// ── Configure ─────────────────────────────────────────────
 
-const STAR_EMOJI = '<:Star:1531882389062684792>';
+const STAFF_FEEDBACK_CHANNEL_ID = "1502529739997446245";
+
+const BANNER_IMAGE_URL =
+    "https://yumi.onl/api/files/6a697f51721650f7b5eb85c9/raw";
+
+const FOOTER_IMAGE_URL =
+    "https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw";
+
+const REVIEWS_PATH = path.join(__dirname, "..", "data", "reviews.json");
+
+const STAR_EMOJI = "<:Star:1531882389062684792>";
+
+// ──────────────────────────────────────────────────────────
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('designer-review')
-        .setDescription('Leave a review for a designer')
+        .setName("designer-review")
+        .setDescription("Leave a review for a designer")
         .addUserOption(option =>
-            option.setName('user')
-                .setDescription('The designer you are reviewing')
-                .setRequired(true))
+            option
+                .setName("user")
+                .setDescription("The designer you're reviewing")
+                .setRequired(true)
+        )
         .addStringOption(option =>
-            option.setName('stars')
-                .setDescription('Your rating (1-5)')
+            option
+                .setName("stars")
+                .setDescription("Rating")
                 .setRequired(true)
                 .addChoices(
-                    { name: '1 — Needs Improvement', value: '1' },
-                    { name: '2 — Below Expectations', value: '2' },
-                    { name: '3 — Meets Expectations', value: '3' },
-                    { name: '4 — Exceeds Expectations', value: '4' },
-                    { name: '5 — Outstanding', value: '5' },
-                ))
+                    { name: "1 — Needs Improvement", value: "1" },
+                    { name: "2 — Below Expectations", value: "2" },
+                    { name: "3 — Meets Expectations", value: "3" },
+                    { name: "4 — Exceeds Expectations", value: "4" },
+                    { name: "5 — Outstanding", value: "5" }
+                )
+        )
         .addStringOption(option =>
-            option.setName('reason')
-                .setDescription('Your feedback')
-                .setRequired(true)),
+            option
+                .setName("reason")
+                .setDescription("Your feedback")
+                .setRequired(true)
+        ),
 
     async execute(interaction) {
-        const staff = interaction.options.getUser('user');
-        const ratingValue = Number(interaction.options.getString('stars'));
-        const stars = STAR_EMOJI.repeat(ratingValue);
-        const feedback = interaction.options.getString('reason');
+        const staff = interaction.options.getUser("user");
+        const ratingValue = Number(
+            interaction.options.getString("stars")
+        );
+        const feedback = interaction.options.getString("reason");
 
-        const feedbackChannel = interaction.guild.channels.cache.get(STAFF_FEEDBACK_CHANNEL_ID);
+        const feedbackChannel =
+            interaction.guild.channels.cache.get(
+                STAFF_FEEDBACK_CHANNEL_ID
+            );
 
         if (!feedbackChannel) {
             return interaction.reply({
-                content: 'Staff feedback channel not found. Please contact an admin.',
+                content: "Feedback channel not found.",
                 flags: MessageFlags.Ephemeral,
             });
         }
 
-        const botPermissions = feedbackChannel.permissionsFor(interaction.client.user);
-        if (!botPermissions?.has(PermissionFlagsBits.SendMessages) ||
-            !botPermissions?.has(PermissionFlagsBits.ViewChannel)) {
+        const perms = feedbackChannel.permissionsFor(
+            interaction.client.user
+        );
+
+        if (
+            !perms?.has(PermissionFlagsBits.ViewChannel) ||
+            !perms?.has(PermissionFlagsBits.SendMessages)
+        ) {
             return interaction.reply({
-                content: 'I do not have permission to send messages in the staff feedback channel.',
+                content:
+                    "I don't have permission to send messages there.",
                 flags: MessageFlags.Ephemeral,
             });
         }
+
+        // Create file if it doesn't exist
+        if (!fs.existsSync(REVIEWS_PATH)) {
+            fs.writeFileSync(
+                REVIEWS_PATH,
+                JSON.stringify([], null, 2)
+            );
+        }
+
+        // Load reviews
+        const reviews = JSON.parse(
+            fs.readFileSync(REVIEWS_PATH, "utf8")
+        );
+
+        // Save review
+        reviews.push({
+            userId: staff.id,
+            reviewerId: interaction.user.id,
+            stars: ratingValue,
+            reason: feedback,
+            createdAt: Date.now(),
+        });
+
+        fs.writeFileSync(
+            REVIEWS_PATH,
+            JSON.stringify(reviews, null, 2)
+        );
+
+        const stars = STAR_EMOJI.repeat(ratingValue);
 
         const container = new ContainerBuilder()
             .addMediaGalleryComponents(
                 new MediaGalleryBuilder().addItems(
-                    new MediaGalleryItemBuilder().setURL(BANNER_IMAGE_URL),
-                ),
+                    new MediaGalleryItemBuilder().setURL(
+                        BANNER_IMAGE_URL
+                    )
+                )
             )
             .addSeparatorComponents(
-                new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small),
-            )
-            .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('## New Review'),
+                new SeparatorBuilder().setSpacing(
+                    SeparatorSpacingSize.Small
+                )
             )
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    [
-                        `**Review for:** ${staff}`,
-                        `**Rating:** ${stars}`,
-                        `**Submitted by:** ${interaction.user}`,
-                        `**Reason:** ${feedback}`,
-                    ].join('\n'),
-                ),
+                    "## New Review"
+                )
+            )
+            .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(
+                    `**Review for:** ${staff}
+**Rating:** ${stars}
+**Submitted by:** ${interaction.user}
+**Reason:** ${feedback}`
+                )
             )
             .addSeparatorComponents(
-                new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small),
+                new SeparatorBuilder().setSpacing(
+                    SeparatorSpacingSize.Small
+                )
             )
             .addMediaGalleryComponents(
                 new MediaGalleryBuilder().addItems(
-                    new MediaGalleryItemBuilder().setURL(FOOTER_IMAGE_URL),
-                ),
+                    new MediaGalleryItemBuilder().setURL(
+                        FOOTER_IMAGE_URL
+                    )
+                )
             );
 
         await feedbackChannel.send({
-            allowedMentions: { users: [staff.id] },
             components: [container],
             flags: MessageFlags.IsComponentsV2,
+            allowedMentions: {
+                users: [staff.id],
+            },
         });
 
         await interaction.reply({
-            content: 'Your feedback has been submitted and sent to the staff feedback channel.',
+            content:
+                "✅ Your review has been submitted successfully.",
             flags: MessageFlags.Ephemeral,
         });
     },
