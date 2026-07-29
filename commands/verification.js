@@ -36,8 +36,8 @@ const {
 // ---------------------------------------------------------
 const CONFIG = {
   TICKET_CHANNEL_ID: '1502793438754770976',      // #tickets
-  VERIFIED_ROLE_ID: '1504325783634841600',     // role granted on verify
-  LOG_CHANNEL_ID: '1532078127084343407',         // verification log channel
+  VERIFIED_ROLE_ID: 'YOUR_VERIFIED_ROLE_ID',     // role granted on verify
+  LOG_CHANNEL_ID: 'YOUR_LOG_CHANNEL_ID',         // verification log channel
   BANNER_URL: 'https://yumi.onl/api/files/6a6a38b554d6927723c15003/raw',
   FOOTER_URL: 'https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw',
   DOT_EMOJI: '<:Dot:1502513706347528213>',
@@ -110,22 +110,26 @@ function buildLogContainer({ member, success, reason }) {
 // add a second client.on(Events.InteractionCreate) anywhere.
 // ---------------------------------------------------------
 async function handleVerifyButton(interaction) {
+  // Acknowledge within Discord's 3-second window FIRST, before doing any
+  // work (role assignment, fetches, etc). Everything after this uses
+  // editReply instead of reply. This is what actually fixes the
+  // "didn't respond in time" / Unknown interaction error — previously
+  // the role.add() call ran before the reply, and if it was slow for
+  // any reason the 3s window closed before Discord ever got an ack.
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
   const member = interaction.member;
 
   try {
     if (member.roles.cache.has(CONFIG.VERIFIED_ROLE_ID)) {
-      await interaction.reply({
-        content: 'You are already verified.',
-        flags: MessageFlags.Ephemeral,
-      });
+      await interaction.editReply({ content: 'You are already verified.' });
       return;
     }
 
     await member.roles.add(CONFIG.VERIFIED_ROLE_ID);
 
-    await interaction.reply({
+    await interaction.editReply({
       content: '✅ You have been verified! You now have full access to the server.',
-      flags: MessageFlags.Ephemeral,
     });
 
     const logChannel = await interaction.client.channels.fetch(CONFIG.LOG_CHANNEL_ID);
@@ -136,9 +140,8 @@ async function handleVerifyButton(interaction) {
   } catch (err) {
     console.error('Verification error:', err);
 
-    await interaction.reply({
+    await interaction.editReply({
       content: 'Something went wrong while verifying you. Please open a ticket for help.',
-      flags: MessageFlags.Ephemeral,
     });
 
     try {
