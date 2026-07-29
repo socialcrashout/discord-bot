@@ -17,33 +17,57 @@ function writeData(data) {
   fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
 }
 
-// Shape: { "<guildId>": [ { caseNumber, userId, userTag, moderatorId, moderatorTag, reason, timestamp } ] }
+// Shape: { "<guildId>": [ { caseNumber, type, userId, userTag, moderatorId, moderatorTag, reason, timestamp } ] }
+// type is one of: 'warn', 'kick', 'ban', 'timeout'
 
-function addWarning(guildId, entry) {
+function addModLog(guildId, entry) {
   const data = readData();
   if (!data[guildId]) data[guildId] = [];
   data[guildId].push(entry);
   writeData(data);
 }
 
-function getWarningsForUser(guildId, userId) {
+function getLogsForUser(guildId, userId) {
   const data = readData();
-  const guildWarnings = data[guildId] || [];
-  return guildWarnings.filter(w => w.userId === userId);
+  const guildLogs = data[guildId] || [];
+  return guildLogs
+    .filter(log => log.userId === userId)
+    .sort((a, b) => b.timestamp - a.timestamp);
 }
 
-// Returns the removed warning, or null if no warning with that case number exists
-function removeWarningByCase(guildId, caseNumber) {
+// Returns the removed entry, or null if no case with that number exists
+function removeLogByCase(guildId, caseNumber) {
   const data = readData();
-  const guildWarnings = data[guildId] || [];
-  const index = guildWarnings.findIndex(w => w.caseNumber === caseNumber);
+  const guildLogs = data[guildId] || [];
+  const index = guildLogs.findIndex(l => l.caseNumber === caseNumber);
 
   if (index === -1) return null;
 
-  const [removed] = guildWarnings.splice(index, 1);
-  data[guildId] = guildWarnings;
+  const [removed] = guildLogs.splice(index, 1);
+  data[guildId] = guildLogs;
   writeData(data);
   return removed;
 }
 
-module.exports = { addWarning, getWarningsForUser, removeWarningByCase };
+// --- Backwards-compatible aliases so existing warn.js keeps working untouched ---
+function addWarning(guildId, entry) {
+  addModLog(guildId, { ...entry, type: entry.type || 'warn' });
+}
+
+function getWarningsForUser(guildId, userId) {
+  return getLogsForUser(guildId, userId).filter(l => l.type === 'warn');
+}
+
+function removeWarningByCase(guildId, caseNumber) {
+  return removeLogByCase(guildId, caseNumber);
+}
+
+module.exports = {
+  addModLog,
+  getLogsForUser,
+  removeLogByCase,
+  // legacy names — still used by warn.js
+  addWarning,
+  getWarningsForUser,
+  removeWarningByCase,
+};
