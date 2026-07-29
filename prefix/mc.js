@@ -1,25 +1,9 @@
-const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
-    ]
-});
+module.exports = {
+    name: "mc",
 
-const PREFIX = "-";
-
-client.on("messageCreate", async (message) => {
-    if (message.author.bot) return;
-    if (!message.content.startsWith(PREFIX)) return;
-
-    const args = message.content.slice(PREFIX.length).trim().split(/ +/);
-    const command = args.shift().toLowerCase();
-
-    if (command === "mc" && args[0] === "v2") {
-
+    async execute(message) {
         const guild = message.guild;
 
         const totalMembers = guild.memberCount;
@@ -27,25 +11,26 @@ client.on("messageCreate", async (message) => {
 
         const embed = new EmbedBuilder()
             .setDescription(`
-<:person:1502514200705105981> **Total members:** ${totalMembers.toLocaleString()}
+<:person:1502514200705105981> **Total Members:** ${totalMembers.toLocaleString()}
 
 <:boost:1532100194840219849> **Boosts:** ${boosts}
 
-<:stats_nlc:1532100287215440115> **Growth statistics:**
-Past 24h: (-8)
-Past 7d: (-4)
-Past month: (+128)
+<:stats_nlc:1532100287215440115> **Growth Statistics**
+**Past 24h:** (-8)
+**Past 7d:** (-4)
+**Past Month:** (+128)
 
 ━━━━━━━━━━━━━━━━━━━━
 
 **Bringing your vision to life.**
-            `)
-            .setImage("https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw");
+            `);
+
+        // Add these if you want:
+        // .setFooter({ text: "Your Footer Here", iconURL: "Footer Icon URL" })
+        // .setImage("Banner URL")
 
         await message.channel.send({
             embeds: [embed]
         });
     }
-});
-
-client.login("DISCORD_TOKEN");
+};
