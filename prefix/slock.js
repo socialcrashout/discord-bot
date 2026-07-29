@@ -2,7 +2,7 @@ const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags 
 const { saveLock, getLock } = require('../utils/channelLock');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
-const ALLOWED_ROLE_ID = '1504311819458580531';
+const ALLOWED_ROLE_ID = '1504311819458580531,1504313264576925757,1504312910862880879';
 
 module.exports = {
     name: 'slock',
