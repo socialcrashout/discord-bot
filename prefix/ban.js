@@ -1,32 +1,58 @@
-const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+const {
+    PermissionFlagsBits,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    MessageFlags,
+} = require('discord.js');
+
 const getNextCase = require('../utils/getNextCase');
 const { addModLog } = require('../utils/modlogs');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use -ban
 
 module.exports = {
     name: 'ban',
     description: 'Ban a member from the server',
     // Usage: -ban @user reason...
+
     async execute(message, args) {
         const errorReply = (text) => message.reply({
-            components: [new ContainerBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(text)
-            )],
+            components: [
+                new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(text)
+                )
+            ],
             flags: MessageFlags.IsComponentsV2,
         });
 
+        // Permission check
         if (!message.member.permissions.has(PermissionFlagsBits.BanMembers)) {
             return errorReply('You do not have permission to ban members.');
         }
 
+        // Role restriction
+        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return errorReply('You do not have the required role to use this command.');
+        }
+
         const target = message.mentions.members?.first();
-        if (!target) return errorReply('<:WarningIcon:1508245066135765034> Please mention a member to ban. Usage: `-ban @user [reason]`');
+
+        if (!target) {
+            return errorReply(
+                '<:WarningIcon:1508245066135765034> Please mention a member to ban. Usage: `-ban @user [reason]`'
+            );
+        }
 
         const reason = args.slice(1).join(' ') || 'No reason provided';
 
-        if (!target.bannable) return errorReply('I cannot ban this member. They may have a higher role than me or I lack permissions.');
-        if (target.id === message.author.id) return errorReply('You cannot ban yourself.');
+        if (!target.bannable) {
+            return errorReply('I cannot ban this member. They may have a higher role than me or I lack permissions.');
+        }
+
+        if (target.id === message.author.id) {
+            return errorReply('You cannot ban yourself.');
+        }
 
         try {
             await target.ban({ reason });
@@ -47,6 +73,7 @@ module.exports = {
 
             // Log to mod-log channel
             const logChannel = message.guild.channels.cache.get(LOG_CHANNEL_ID);
+
             if (logChannel) {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
@@ -75,7 +102,11 @@ module.exports = {
                 )
             );
 
-            await message.channel.send({ components: [container], flags: MessageFlags.IsComponentsV2 });
+            await message.channel.send({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2,
+            });
+
         } catch (error) {
             console.error(error);
             await errorReply('Something went wrong while trying to ban that member.');
