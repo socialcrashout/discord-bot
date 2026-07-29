@@ -27,7 +27,9 @@ const {
   Client,
   GatewayIntentBits,
   Partials,
-  EmbedBuilder,
+  ContainerBuilder,
+  TextDisplayBuilder,
+  MessageFlags,
 } = require('discord.js');
 
 const PREFIX = '-';
@@ -95,11 +97,16 @@ client.on('messageCreate', async (message) => {
       `${message.author.tag} (${message.author.id}) went AFK in #${message.channel.name}. Reason: "${reason}"`
     );
 
-    const embed = new EmbedBuilder().setDescription(
-      `💤 **You are now AFK.**\nReason: ${reason}\n\nType \`${PREFIX}endafk\` to come back, or just send a message to auto-clear it.`
+    const container = new ContainerBuilder().addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `💤 **You are now AFK.**\nReason: ${reason}\n\nType \`${PREFIX}endafk\` to come back, or just send a message to auto-clear it.`
+      )
     );
 
-    await message.reply({ embeds: [embed] });
+    await message.reply({
+      components: [container],
+      flags: MessageFlags.IsComponentsV2,
+    });
     return;
   }
 
@@ -119,11 +126,16 @@ client.on('messageCreate', async (message) => {
       `${message.author.tag} (${message.author.id}) manually ended AFK after ${duration}.`
     );
 
-    const embed = new EmbedBuilder().setDescription(
-      `👋 **Welcome back!** You were AFK for ${duration}.`
+    const container = new ContainerBuilder().addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `👋 **Welcome back!** You were AFK for ${duration}.`
+      )
     );
 
-    await message.reply({ embeds: [embed] });
+    await message.reply({
+      components: [container],
+      flags: MessageFlags.IsComponentsV2,
+    });
     return;
   }
 
