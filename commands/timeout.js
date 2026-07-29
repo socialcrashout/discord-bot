@@ -1,6 +1,5 @@
 const {
     SlashCommandBuilder,
-    PermissionFlagsBits,
     ContainerBuilder,
     TextDisplayBuilder,
     MessageFlags,
@@ -10,9 +9,15 @@ const getNextCase = require('../utils/getNextCase');
 const { addModLog } = require('../utils/modlogs');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
-const ALLOWED_ROLE_ID = '1504311819458580531,1504313264576925757,1504312910862880879,1504320706341502996'; // Replace with the role ID that can use /timeout
 
-// Parses strings like "10m", "1h", "2d" into milliseconds. Max allowed by Discord is 28 days.
+const ALLOWED_ROLE_IDS = [
+    '1504311819458580531',
+    '1504313264576925757',
+    '1504312910862880879',
+    '1504320706341502996'
+];
+
+// Parses strings like "10m", "1h", "2d" into milliseconds. Max 28 days.
 function parseDuration(input) {
     const match = /^(\d+)\s*(s|m|h|d)$/i.exec(input.trim());
     if (!match) return null;
@@ -50,8 +55,7 @@ module.exports = {
         .addStringOption(option =>
             option.setName('reason')
                 .setDescription('Reason for the timeout')
-                .setRequired(false))
-        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
+                .setRequired(false)),
 
     async execute(interaction) {
         const errorReply = (text) => interaction.reply({
@@ -63,19 +67,15 @@ module.exports = {
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
-        // Permission check
-        if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
-            return errorReply('You do not have permission to timeout members.');
-        }
-
         // Role restriction
-        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+        if (!interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id))) {
             return errorReply('You do not have the required role to use this command.');
         }
 
         const target = interaction.options.getUser('target');
         const durationInput = interaction.options.getString('duration');
         const reason = interaction.options.getString('reason') || 'No reason provided';
+
         const member = interaction.guild.members.cache.get(target.id);
 
         if (!member) {
@@ -114,7 +114,6 @@ module.exports = {
                 timestamp,
             });
 
-            // Log to mod-log channel
             const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
 
             if (logChannel) {
