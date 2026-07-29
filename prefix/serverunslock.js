@@ -2,6 +2,7 @@ const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags 
 const { getLockState, clearLockState } = require('../utils/serverLock');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
+const ALLOWED_ROLE_ID = '1504311819458580531';
 
 module.exports = {
     name: 'serverunlock',
@@ -14,6 +15,10 @@ module.exports = {
             )],
             flags: MessageFlags.IsComponentsV2,
         });
+
+        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return errorReply('You do not have permission to use this command.');
+        }
 
         if (!message.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
             return errorReply('You do not have permission to manage channels.');
@@ -34,7 +39,11 @@ module.exports = {
             if (!channel) continue;
 
             try {
-                await channel.permissionOverwrites.edit(everyoneRole, { SendMessages: previousValue }, { reason });
+                await channel.permissionOverwrites.edit(
+                    everyoneRole,
+                    { SendMessages: previousValue },
+                    { reason }
+                );
                 unlockedCount++;
             } catch (err) {
                 console.error(`Failed to unlock channel ${channelId}:`, err);
@@ -44,6 +53,7 @@ module.exports = {
         clearLockState(message.guild.id);
 
         const logChannel = message.guild.channels.cache.get(LOG_CHANNEL_ID);
+
         if (logChannel) {
             const logContainer = new ContainerBuilder().addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
