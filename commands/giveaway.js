@@ -7,7 +7,7 @@ const {
   ActionRowBuilder,
   EmbedBuilder,
 } = require("discord.js");
-const giveaways = require("../lib/giveawayManager");
+const giveaways = require("../utils/giveawayManager");
 
 module.exports = {
   data: new SlashCommandBuilder()
