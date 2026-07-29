@@ -1,5 +1,14 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    MessageFlags,
+} = require('discord.js');
+
 const { getLogsForUser } = require('../utils/modlogs');
+
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /modlogs
 
 const TYPE_LABELS = {
     warn: 'Warn',
@@ -20,6 +29,25 @@ module.exports = {
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
 
     async execute(interaction) {
+        const errorReply = (text) => interaction.reply({
+            components: [
+                new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(text)
+                )
+            ],
+            flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+        });
+
+        // Permission check
+        if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+            return errorReply('You do not have permission to view moderation logs.');
+        }
+
+        // Role restriction
+        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return errorReply('You do not have the required role to use this command.');
+        }
+
         const target = interaction.options.getUser('user');
         const logs = getLogsForUser(interaction.guild.id, target.id);
 
@@ -30,10 +58,15 @@ module.exports = {
                     `This user has a clean record — no cases on file.`
                 )
             );
-            return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+
+            return interaction.reply({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2,
+            });
         }
 
         const shown = logs.slice(0, 10);
+
         const lines = shown.map(log =>
             `**Case #${log.caseNumber} — ${TYPE_LABELS[log.type] || log.type}**\n` +
             `> **Moderator:** ${log.moderatorTag}\n` +
@@ -54,6 +87,9 @@ module.exports = {
             )
         );
 
-        await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+        await interaction.reply({
+            components: [container],
+            flags: MessageFlags.IsComponentsV2,
+        });
     },
 };
