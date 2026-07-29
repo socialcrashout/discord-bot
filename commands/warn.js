@@ -10,7 +10,7 @@ const getNextCase = require('../utils/getNextCase');
 const { addWarning } = require('../utils/warnings');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
-const ALLOWED_ROLE_ID = '1504320706341502996,1504313264576925757,1504313264576925757'; // Replace with the role ID that can use /warn
+const ALLOWED_ROLE_ID = '1504320706341502996,1504313264576925757,1504312910862880879,1504311819458580531'; // Replace with the role ID that can use /warn
 
 module.exports = {
     data: new SlashCommandBuilder()
