@@ -1,6 +1,5 @@
 const {
     SlashCommandBuilder,
-    PermissionFlagsBits,
     ContainerBuilder,
     TextDisplayBuilder,
     MessageFlags,
@@ -8,16 +7,27 @@ const {
 } = require('discord.js');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
-const ALLOWED_ROLE_ID = '1504311819458580531,1504313264576925757,1504312910862880879'; // Replace with the role ID that can use /slowmode
 
-// Parses strings like "10s", "5m", "1h" into seconds. Discord's max slowmode is 6 hours.
+const ALLOWED_ROLE_IDS = [
+    '1504311819458580531',
+    '1504313264576925757',
+    '1504312910862880879'
+];
+
+// Parses strings like "10s", "5m", "1h" into seconds. Max 6 hours.
 function parseDuration(input) {
     const match = /^(\d+)\s*(s|m|h)$/i.exec(input.trim());
     if (!match) return null;
 
     const amount = parseInt(match[1], 10);
     const unit = match[2].toLowerCase();
-    const multipliers = { s: 1, m: 60, h: 60 * 60 };
+
+    const multipliers = {
+        s: 1,
+        m: 60,
+        h: 60 * 60
+    };
+
     const seconds = amount * multipliers[unit];
 
     const maxSeconds = 6 * 60 * 60;
@@ -38,8 +48,7 @@ module.exports = {
             option.setName('channel')
                 .setDescription('The channel to apply slowmode to (defaults to this channel)')
                 .addChannelTypes(ChannelType.GuildText)
-                .setRequired(false))
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
+                .setRequired(false)),
 
     async execute(interaction) {
         const errorReply = (text) => interaction.reply({
@@ -51,13 +60,8 @@ module.exports = {
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
-        // Permission check
-        if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
-            return errorReply('You do not have permission to manage channels.');
-        }
-
         // Role restriction
-        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+        if (!interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id))) {
             return errorReply('You do not have the required role to use this command.');
         }
 
