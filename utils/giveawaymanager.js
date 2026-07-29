@@ -31,7 +31,7 @@ const CONFIG = {
         enter: "<:Star:1531882389062684792>",     // shown on the "Enter" button
         ended: "<:Lock:1502513716384632873>",     // shown on the disabled "Ended" button
         entries: "<:Member:1502514198595240076>",   // shown next to the entries count
-        duration: "⏰",  // shown next to duration / ends-at
+        duration: "<:Calendar:1502513561866473734>",  // shown next to duration / ends-at
         winner: "🏆",    // shown next to winner(s)
     },
 
