@@ -28,6 +28,7 @@ module.exports = {
         // Add these if you want:
         // .setFooter({ text: "Your Footer Here", iconURL: "Footer Icon URL" })
         // .setImage("Banner URL")
+        embed.setFooter({ text: "Your Footer Here", iconURL: "https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw" });
 
         await message.channel.send({
             embeds: [embed]
