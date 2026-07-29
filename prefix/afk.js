@@ -1,3 +1,26 @@
+/**
+ * Discord.js AFK System
+ * ----------------------
+ * Commands:
+ *   -afk [reason]   -> marks you as AFK (reason optional)
+ *   -endafk         -> removes your AFK status
+ *
+ * Behavior:
+ *   - If someone @mentions a user who is AFK, the bot replies telling them
+ *     that user is AFK (with reason + how long ago).
+ *   - If an AFK user sends any message, they are automatically welcomed
+ *     back and their AFK status is cleared.
+ *   - Every AFK-related event is logged to console AND appended to afk.log
+ *
+ * Setup:
+ *   npm install discord.js dotenv
+ *   Create a .env file in this same folder containing:
+ *     DISCORD_TOKEN=your_bot_token_here
+ *   node afkBot.js
+ */
+
+require('dotenv').config();
+
 const fs = require('fs');
 const path = require('path');
 const {
@@ -72,11 +95,9 @@ client.on('messageCreate', async (message) => {
       `${message.author.tag} (${message.author.id}) went AFK in #${message.channel.name}. Reason: "${reason}"`
     );
 
-    const embed = new EmbedBuilder()
-      .setColor(0xf1c40f)
-      .setDescription(
-        `💤 **You are now AFK.**\nReason: ${reason}\n\nType \`${PREFIX}endafk\` to come back, or just send a message to auto-clear it.`
-      );
+    const embed = new EmbedBuilder().setDescription(
+      `💤 **You are now AFK.**\nReason: ${reason}\n\nType \`${PREFIX}endafk\` to come back, or just send a message to auto-clear it.`
+    );
 
     await message.reply({ embeds: [embed] });
     return;
@@ -98,9 +119,9 @@ client.on('messageCreate', async (message) => {
       `${message.author.tag} (${message.author.id}) manually ended AFK after ${duration}.`
     );
 
-    const embed = new EmbedBuilder()
-      .setColor(0x2ecc71)
-      .setDescription(`👋 **Welcome back!** You were AFK for ${duration}.`);
+    const embed = new EmbedBuilder().setDescription(
+      `👋 **Welcome back!** You were AFK for ${duration}.`
+    );
 
     await message.reply({ embeds: [embed] });
     return;
@@ -141,4 +162,11 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-client.login(process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN_HERE');
+if (!process.env.DISCORD_TOKEN) {
+  console.error(
+    'No DISCORD_TOKEN found. Make sure you have a .env file in the same folder as this script containing:\nDISCORD_TOKEN=your_token_here'
+  );
+  process.exit(1);
+}
+
+client.login(process.env.DISCORD_TOKEN);
