@@ -1,13 +1,15 @@
-const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 const getNextCase = require('../utils/getNextCase');
 const { addWarning } = require('../utils/warnings');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE';
 
 module.exports = {
     name: 'warn',
     description: 'Warn a member',
     // Usage: -warn @user reason...
+
     async execute(message, args) {
         const errorReply = (text) => message.reply({
             components: [new ContainerBuilder().addTextDisplayComponents(
@@ -16,15 +18,21 @@ module.exports = {
             flags: MessageFlags.IsComponentsV2,
         });
 
-        if (!message.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
             return errorReply('<:warning:1531049700520624278> You do not have permission to warn members.');
         }
 
         const target = message.mentions.members?.first();
-        if (!target) return errorReply('<:WarningIcon:1508245066135765034> Please mention a member to warn. Usage: `-warn @user [reason]`');
+
+        if (!target) {
+            return errorReply('<:WarningIcon:1508245066135765034> Please mention a member to warn. Usage: `-warn @user [reason]`');
+        }
 
         const reason = args.slice(1).join(' ');
-        if (!reason) return errorReply('<:WarningIcon:1508245066135765034> Please provide a reason. Usage: `-warn @user [reason]`');
+
+        if (!reason) {
+            return errorReply('<:WarningIcon:1508245066135765034> Please provide a reason. Usage: `-warn @user [reason]`');
+        }
 
         try {
             const caseNumber = await getNextCase(message.guild.id);
@@ -41,6 +49,7 @@ module.exports = {
             });
 
             const logChannel = message.guild.channels.cache.get(LOG_CHANNEL_ID);
+
             if (logChannel) {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
@@ -69,7 +78,11 @@ module.exports = {
                 )
             );
 
-            await message.channel.send({ components: [container], flags: MessageFlags.IsComponentsV2 });
+            await message.channel.send({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2
+            });
+
         } catch (error) {
             console.error(error);
             await errorReply('Something went wrong while warning that member.');
