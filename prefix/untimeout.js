@@ -1,7 +1,8 @@
-const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 const getNextCase = require('../utils/getNextCase');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE';
 
 module.exports = {
     name: 'untimeout',
@@ -15,16 +16,21 @@ module.exports = {
             flags: MessageFlags.IsComponentsV2,
         });
 
-        if (!message.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
             return errorReply('You do not have permission to remove timeouts.');
         }
 
         const target = message.mentions.members?.first();
-        if (!target) return errorReply('<:WarningIcon:1508245066135765034> Please mention a member. Usage: `-untimeout @user [reason]`');
+        if (!target) {
+            return errorReply('<:WarningIcon:1508245066135765034> Please mention a member. Usage: `-untimeout @user [reason]`');
+        }
 
         const reason = args.slice(1).join(' ') || 'No reason provided';
 
-        if (!target.moderatable) return errorReply('I cannot modify this member. They may have a higher role than me or I lack permissions.');
+        if (!target.moderatable) {
+            return errorReply('I cannot modify this member. They may have a higher role than me or I lack permissions.');
+        }
+
         if (!target.communicationDisabledUntilTimestamp || target.communicationDisabledUntilTimestamp < Date.now()) {
             return errorReply('That member is not currently timed out.');
         }
@@ -34,8 +40,8 @@ module.exports = {
 
             const caseNumber = await getNextCase(message.guild.id);
 
-            // Log to mod-log channel
             const logChannel = message.guild.channels.cache.get(LOG_CHANNEL_ID);
+
             if (logChannel) {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
@@ -64,7 +70,11 @@ module.exports = {
                 )
             );
 
-            await message.channel.send({ components: [container], flags: MessageFlags.IsComponentsV2 });
+            await message.channel.send({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2
+            });
+
         } catch (error) {
             console.error(error);
             await errorReply('Something went wrong while trying to remove that timeout.');
