@@ -184,7 +184,7 @@ module.exports = {
         }
 
         try {
-            await noblox.setCookie(process.env.COOKIE);
+           await noblox.setCookie(process.env.ROBLOX_COOKIE);
             client.logs.custom('Purchase logging started.');
             listenForPurchases(client);
         } catch (error) {

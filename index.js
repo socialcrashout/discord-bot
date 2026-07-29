@@ -19,6 +19,14 @@ const client = new Client({
 client.commands = new Collection();
 client.slashCommands = new Collection();
 
+// Simple logger attached to the client so any command/event can use it
+client.logs = {
+    info: (...args) => console.log('[INFO]', ...args),
+    custom: (...args) => console.log('[LOG]', ...args),
+    warn: (...args) => console.warn('[WARN]', ...args),
+    error: (...args) => console.error('[ERROR]', ...args),
+};
+
 function requireCommand(filePath) {
     try {
         if (require.cache[require.resolve(filePath)]) {
