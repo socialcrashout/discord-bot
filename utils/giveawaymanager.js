@@ -1,24 +1,79 @@
 const fs = require("fs");
 const path = require("path");
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const {
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    SeparatorBuilder,
+    SeparatorSpacingSize,
+    MediaGalleryBuilder,
+    MessageFlags,
+} = require("discord.js");
 
 const DATA_PATH = path.join(__dirname, "..", "data", "giveaways.json");
+
+// ============================================================================
+// CONFIG — edit anything in here, no need to touch the logic below it.
+// ============================================================================
+const CONFIG = {
+    // Banner shown at the top of every giveaway (active AND ended). This used
+    // to live on each giveaway (bannerUrl), it's now global — change this one
+    // line and every giveaway, past and future, uses it.
+    BANNER_URL: "https://yumi.onl/api/files/6a6a214a66bfddd463dffa7c/raw",
+
+    // Drop your custom emoji strings in here, e.g. "<:giveaway:123456789012345678>"
+    // (use "<a:name:id>" instead of "<:name:id>" if the emoji is animated).
+    // Leave the defaults if you just want plain unicode emoji.
+    EMOJIS: {
+        title: "🎉",     // shown next to the prize in the title line
+        enter: "🎉",     // shown on the "Enter" button
+        ended: "🔒",     // shown on the disabled "Ended" button
+        entries: "👥",   // shown next to the entries count
+        duration: "⏰",  // shown next to duration / ends-at
+        winner: "🏆",    // shown next to winner(s)
+    },
+
+    // Wording used across the giveaway container. {placeholders} get filled
+    // in automatically, change the text around them however you like.
+    TEXT: {
+        titleLine: "{titleEmoji} **{prize}**",
+        idLine: "Giveaway ID: {id}",
+        durationLineActive: "{durationEmoji} **Duration:** <t:{endTimestamp}:R>",
+        durationLineEnded: "{durationEmoji} **Duration:** Ended",
+        entriesLine: "{entriesEmoji} **Entries:** {entryCount}",
+        winnerCountLine: "{winnerEmoji} **Winner Count:** {winnersCount}",
+        winnersLineEnded: "{winnerEmoji} **Winners:** {winnersMentions}",
+        noWinnersLine: "{winnerEmoji} **Winners:** No valid entries",
+        requirementsLine: "**Requirements:**\n{requirements}",
+        enterCallToAction: "Click the button below to enter!",
+        announceWin: "{titleEmoji} Congratulations {winnersMentions} on winning **{prize}**!",
+        announceNoWinners: "😕 The giveaway for **{prize}** ended with no valid entries.",
+        rerollAnnounce: "🔁 New winner{plural} for **{prize}**: {winnersMentions}!",
+        rerollNoWinners: "😕 Couldn't reroll — there are no valid entries.",
+    },
+
+    BUTTONS: {
+        enterLabel: "Enter Giveaway",
+        endedLabel: "Ended",
+        entriesLabelSuffix: "Entries", // secondary button reads "{count} Entries"
+    },
+};
 
 // giveaway shape:
 // {
 //   id (messageId), channelId, guildId, hostId,
 //   prize, winnersCount, endTime (ms epoch),
-//   requirements: string|null, bannerUrl: string|null,
+//   requirements: string|null,
 //   pingType: 'none'|'here'|'everyone',
 //   entries: [userId,...], ended: bool
 // }
+// NOTE: bannerUrl no longer lives on the giveaway — see CONFIG.BANNER_URL above.
 
 const active = new Map();   // id -> giveaway object
 const timers = new Map();   // id -> Timeout handle
 const drafts = new Map();   // draftId -> in-progress giveaway builder (pre-post)
-
-const COLOR_ACTIVE = 0xF2C4C0; // soft pink/gold accent
-const COLOR_ENDED = 0x2B2D31;
 
 function loadData() {
     try {
@@ -74,73 +129,133 @@ function allowedMentionsFor(pingType) {
     return { parse: [] };
 }
 
-function buildEmbed(giveaway, ended = false, winners = []) {
-    const endedAt = Math.floor(giveaway.endTime / 1000);
-    const embed = new EmbedBuilder()
-        .setColor(ended ? COLOR_ENDED : COLOR_ACTIVE)
-        .setTitle(ended ? "🎉 GIVEAWAY ENDED 🎉" : "🎉 GIVEAWAY 🎉")
-        .setFooter({ text: `${giveaway.entries.length} entr${giveaway.entries.length === 1 ? "y" : "ies"} • Hosted by ${giveaway.hostName || "staff"}` });
-
-    let desc = `**Prize:** ${giveaway.prize}\n`;
-    desc += `**Winners:** ${giveaway.winnersCount}\n`;
-    desc += `**Hosted by:** <@${giveaway.hostId}>\n`;
-    desc += ended
-        ? `**Ended:** <t:${endedAt}:R>\n`
-        : `**Ends:** <t:${endedAt}:R> (<t:${endedAt}:f>)\n`;
-
-    if (giveaway.requirements) {
-        desc += `\n**Requirements:**\n${giveaway.requirements}\n`;
-    }
-
-    if (ended) {
-        desc += winners.length
-            ? `\n**Winner${winners.length > 1 ? "s" : ""}:** ${winners.map(w => `<@${w}>`).join(", ")}`
-            : `\n**Winners:** No valid entries — nobody won this one.`;
-    } else {
-        desc += `\nClick the button below to enter!`;
-    }
-
-    embed.setDescription(desc);
-
-    if (giveaway.bannerUrl) embed.setImage(giveaway.bannerUrl);
-
-    return embed;
+// tiny {placeholder} renderer so CONFIG.TEXT stays plain, editable strings
+function render(template, vars) {
+    return template.replace(/\{(\w+)\}/g, (_, key) => (vars[key] !== undefined ? vars[key] : ""));
 }
 
-function buildComponents(giveaway, ended = false) {
-    if (ended) {
-        const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId("gw_enter")
-                .setLabel("Giveaway Ended")
-                .setEmoji("🎉")
-                .setStyle(ButtonStyle.Secondary)
-                .setDisabled(true)
+// ============================================================================
+// Components V2 container builder — replaces the old EmbedBuilder entirely.
+// No accent color is set on purpose (per design), so the container's left
+// edge just matches the background instead of showing a colored bar.
+// ============================================================================
+function buildGiveawayContainer(giveaway, ended = false, winners = []) {
+    const { EMOJIS, TEXT } = CONFIG;
+    const endTimestamp = Math.floor(giveaway.endTime / 1000);
+    const container = new ContainerBuilder();
+
+    // Banner
+    if (CONFIG.BANNER_URL) {
+        container.addMediaGalleryComponents((gallery) =>
+            gallery.addItems((item) => item.setURL(CONFIG.BANNER_URL))
         );
-        return [row];
     }
-    const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId("gw_enter")
-            .setLabel(`Enter (${giveaway.entries.length})`)
-            .setEmoji("🎉")
-            .setStyle(ButtonStyle.Primary)
+
+    // Title
+    container.addTextDisplayComponents((t) =>
+        t.setContent(render(TEXT.titleLine, { titleEmoji: EMOJIS.title, prize: giveaway.prize }))
     );
-    return [row];
+
+    // Ping tag, if any
+    const ping = pingContent(giveaway.pingType);
+    if (ping) {
+        container.addTextDisplayComponents((t) => t.setContent(ping));
+    }
+
+    // Giveaway ID
+    container.addTextDisplayComponents((t) =>
+        t.setContent(render(TEXT.idLine, { id: giveaway.id || "pending" }))
+    );
+
+    container.addSeparatorComponents((s) => s.setDivider(true).setSpacing(SeparatorSpacingSize.Small));
+
+    // Info block
+    const lines = [];
+    lines.push(
+        ended
+            ? render(TEXT.durationLineEnded, { durationEmoji: EMOJIS.duration })
+            : render(TEXT.durationLineActive, { durationEmoji: EMOJIS.duration, endTimestamp })
+    );
+    lines.push(render(TEXT.entriesLine, { entriesEmoji: EMOJIS.entries, entryCount: giveaway.entries.length }));
+
+    if (ended) {
+        lines.push(
+            winners.length
+                ? render(TEXT.winnersLineEnded, {
+                      winnerEmoji: EMOJIS.winner,
+                      winnersMentions: winners.map((w) => `<@${w}>`).join(", "),
+                  })
+                : render(TEXT.noWinnersLine, { winnerEmoji: EMOJIS.winner })
+        );
+    } else {
+        lines.push(render(TEXT.winnerCountLine, { winnerEmoji: EMOJIS.winner, winnersCount: giveaway.winnersCount }));
+    }
+
+    if (giveaway.requirements) {
+        lines.push("");
+        lines.push(render(TEXT.requirementsLine, { requirements: giveaway.requirements }));
+    }
+
+    if (!ended) {
+        lines.push("");
+        lines.push(TEXT.enterCallToAction);
+    }
+
+    container.addTextDisplayComponents((t) => t.setContent(lines.join("\n")));
+
+    // Buttons
+    container.addActionRowComponents((row) => row.setComponents(buildButtons(giveaway, ended)));
+
+    return container;
+}
+
+function buildButtons(giveaway, ended = false) {
+    const { EMOJIS, BUTTONS } = CONFIG;
+
+    const enterButton = new ButtonBuilder()
+        .setCustomId("gw_enter")
+        .setStyle(ended ? ButtonStyle.Secondary : ButtonStyle.Primary)
+        .setLabel(ended ? BUTTONS.endedLabel : BUTTONS.enterLabel)
+        .setEmoji(ended ? EMOJIS.ended : EMOJIS.enter)
+        .setDisabled(ended);
+
+    const entriesButton = new ButtonBuilder()
+        .setCustomId("gw_entries_count")
+        .setStyle(ButtonStyle.Secondary)
+        .setLabel(`${giveaway.entries.length} ${BUTTONS.entriesLabelSuffix}`)
+        .setEmoji(EMOJIS.entries)
+        .setDisabled(true);
+
+    return [enterButton, entriesButton];
+}
+
+// Wraps a container in the payload shape needed to actually send/edit it.
+function containerPayload(container, extra = {}) {
+    return {
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        ...extra,
+    };
 }
 
 async function postGiveaway(client, giveaway) {
     const channel = await client.channels.fetch(giveaway.channelId).catch(() => null);
     if (!channel) throw new Error("Target channel not found or not accessible.");
 
-    const content = pingContent(giveaway.pingType);
+    // Components V2 messages can't carry `content`, so an @everyone/@here
+    // ping (if configured) goes out as its own plain message right before
+    // the giveaway container.
+    const ping = pingContent(giveaway.pingType);
+    if (ping) {
+        await channel.send({
+            content: ping,
+            allowedMentions: allowedMentionsFor(giveaway.pingType),
+        }).catch(() => null);
+    }
 
-    const msg = await channel.send({
-        content: content || undefined,
-        embeds: [buildEmbed(giveaway, false)],
-        components: buildComponents(giveaway, false),
-        allowedMentions: allowedMentionsFor(giveaway.pingType),
-    });
+    const msg = await channel.send(
+        containerPayload(buildGiveawayContainer(giveaway, false))
+    );
 
     giveaway.id = msg.id;
     giveaway.channelId = channel.id;
@@ -215,22 +330,31 @@ async function endGiveaway(client, id, opts = {}) {
     const channel = await client.channels.fetch(giveaway.channelId).catch(() => null);
     if (channel) {
         const message = await channel.messages.fetch(giveaway.id).catch(() => null);
-        if (message) {
-            await message.edit({
-                embeds: [buildEmbed(giveaway, true, winners)],
-                components: buildComponents(giveaway, true),
-            }).catch(() => null);
-        }
 
-        if (winners.length) {
-            await channel.send({
-                content: `🎉 Congratulations ${winners.map(w => `<@${w}>`).join(", ")}! You won **${giveaway.prize}**!`,
-                allowedMentions: { users: winners },
-            }).catch(() => null);
-        } else {
-            await channel.send({
-                content: `😕 The giveaway for **${giveaway.prize}** ended with no valid entries.`,
-            }).catch(() => null);
+        if (message) {
+            await message.edit(
+                containerPayload(buildGiveawayContainer(giveaway, true, winners))
+            ).catch(() => null);
+
+            // Announcement replies to the original giveaway message so it's
+            // obvious which giveaway it belongs to.
+            const announceContainer = new ContainerBuilder().addTextDisplayComponents((t) =>
+                t.setContent(
+                    winners.length
+                        ? render(CONFIG.TEXT.announceWin, {
+                              titleEmoji: CONFIG.EMOJIS.title,
+                              winnersMentions: winners.map((w) => `<@${w}>`).join(", "),
+                              prize: giveaway.prize,
+                          })
+                        : render(CONFIG.TEXT.announceNoWinners, { prize: giveaway.prize })
+                )
+            );
+
+            await message.reply(
+                containerPayload(announceContainer, {
+                    allowedMentions: { users: winners },
+                })
+            ).catch(() => null);
         }
     }
 
@@ -251,16 +375,29 @@ async function rerollGiveaway(client, id, overrideCount) {
     const channel = await client.channels.fetch(giveaway.channelId).catch(() => null);
     if (channel) {
         const message = await channel.messages.fetch(giveaway.id).catch(() => null);
+
         if (message) {
-            await message.edit({ embeds: [buildEmbed(giveaway, true, winners)] }).catch(() => null);
-        }
-        if (winners.length) {
-            await channel.send({
-                content: `🔁 New winner${winners.length > 1 ? "s" : ""} for **${giveaway.prize}**: ${winners.map(w => `<@${w}>`).join(", ")}!`,
-                allowedMentions: { users: winners },
-            }).catch(() => null);
-        } else {
-            await channel.send({ content: `😕 Couldn't reroll — there are no valid entries.` }).catch(() => null);
+            await message.edit(
+                containerPayload(buildGiveawayContainer(giveaway, true, winners))
+            ).catch(() => null);
+
+            const rerollContainer = new ContainerBuilder().addTextDisplayComponents((t) =>
+                t.setContent(
+                    winners.length
+                        ? render(CONFIG.TEXT.rerollAnnounce, {
+                              plural: winners.length > 1 ? "s" : "",
+                              prize: giveaway.prize,
+                              winnersMentions: winners.map((w) => `<@${w}>`).join(", "),
+                          })
+                        : CONFIG.TEXT.rerollNoWinners
+                )
+            );
+
+            await message.reply(
+                containerPayload(rerollContainer, {
+                    allowedMentions: { users: winners },
+                })
+            ).catch(() => null);
         }
     }
 
@@ -275,7 +412,6 @@ async function editGiveaway(client, id, updates) {
     if (updates.prize !== undefined) giveaway.prize = updates.prize;
     if (updates.winnersCount !== undefined) giveaway.winnersCount = updates.winnersCount;
     if (updates.requirements !== undefined) giveaway.requirements = updates.requirements || null;
-    if (updates.bannerUrl !== undefined) giveaway.bannerUrl = updates.bannerUrl || null;
     if (updates.durationMs !== undefined) {
         giveaway.endTime = Date.now() + updates.durationMs;
     }
@@ -287,7 +423,9 @@ async function editGiveaway(client, id, updates) {
     if (channel) {
         const message = await channel.messages.fetch(giveaway.id).catch(() => null);
         if (message) {
-            await message.edit({ embeds: [buildEmbed(giveaway, false)] }).catch(() => null);
+            await message.edit(
+                containerPayload(buildGiveawayContainer(giveaway, false))
+            ).catch(() => null);
         }
     }
 
@@ -344,9 +482,11 @@ function deleteDraft(draftId) {
 }
 
 module.exports = {
+    CONFIG,
     parseDuration,
-    buildEmbed,
-    buildComponents,
+    buildGiveawayContainer,
+    buildButtons,
+    containerPayload,
     postGiveaway,
     endGiveaway,
     rerollGiveaway,
