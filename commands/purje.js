@@ -7,7 +7,7 @@ const {
 } = require('discord.js');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
-const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /purge
+const ALLOWED_ROLE_ID = '1504311819458580531,1504312910862880879,1504313264576925757'; // Replace with the role ID that can use /purge
 
 const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
 
