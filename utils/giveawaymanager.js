@@ -32,7 +32,7 @@ const CONFIG = {
         ended: "<:Lock:1502513716384632873>",     // shown on the disabled "Ended" button
         entries: "<:Member:1502514198595240076>",   // shown next to the entries count
         duration: "<:Calendar:1502513561866473734>",  // shown next to duration / ends-at
-        winner: "🏆",    // shown next to winner(s)
+        winner: "<:cheers:1502514532331946006>",    // shown next to winner(s)
     },
 
     // Wording used across the giveaway container. {placeholders} get filled
