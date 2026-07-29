@@ -10,7 +10,7 @@ const getNextCase = require('../utils/getNextCase');
 const { addModLog } = require('../utils/modlogs');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
-const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /ban
+const ALLOWED_ROLE_ID = '1504311819458580531'; // Replace with the role ID that can use /ban
 
 module.exports = {
     data: new SlashCommandBuilder()
