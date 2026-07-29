@@ -23,6 +23,10 @@ const CONFIG = {
     // line and every giveaway, past and future, uses it.
     BANNER_URL: "https://yumi.onl/api/files/6a6a214a66bfddd463dffa7c/raw",
 
+    // Footer image shown at the bottom of every giveaway (active AND ended).
+    // Hardcoded per request — change this one line to update it everywhere.
+    FOOTER_URL: "https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw",
+
     // Drop your custom emoji strings in here, e.g. "<:giveaway:123456789012345678>"
     // (use "<a:name:id>" instead of "<:name:id>" if the emoji is animated).
     // Leave the defaults if you just want plain unicode emoji.
@@ -205,6 +209,14 @@ function buildGiveawayContainer(giveaway, ended = false, winners = []) {
 
     // Buttons
     container.addActionRowComponents((row) => row.setComponents(buildButtons(giveaway, ended)));
+
+    // Footer (hardcoded image, shown at the very bottom of the container)
+    if (CONFIG.FOOTER_URL) {
+        container.addSeparatorComponents((s) => s.setDivider(true).setSpacing(SeparatorSpacingSize.Small));
+        container.addMediaGalleryComponents((gallery) =>
+            gallery.addItems((item) => item.setURL(CONFIG.FOOTER_URL))
+        );
+    }
 
     return container;
 }
