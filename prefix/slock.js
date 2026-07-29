@@ -1,27 +1,36 @@
-const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 const { saveLock, getLock } = require('../utils/channelLock');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
-const ALLOWED_ROLE_ID = '1504311819458580531,1504313264576925757,1504312910862880879';
+
+const ALLOWED_ROLE_IDS = [
+    '1504311819458580531',
+    '1504313264576925757',
+    '1504312910862880879'
+];
 
 module.exports = {
     name: 'slock',
     description: 'Lock the channel this command is run in',
     // Usage: -slock reason...
     async execute(message, args) {
+
         const errorReply = (text) => message.reply({
-            components: [new ContainerBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(text)
-            )],
+            components: [
+                new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(text)
+                )
+            ],
             flags: MessageFlags.IsComponentsV2,
         });
 
-        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
-            return errorReply('You do not have permission to use this command.');
-        }
+        // Role restriction
+        const hasRole = ALLOWED_ROLE_IDS.some(roleId =>
+            message.member.roles.cache.has(roleId)
+        );
 
-        if (!message.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
-            return errorReply('You do not have permission to manage channels.');
+        if (!hasRole) {
+            return errorReply('You do not have permission to use this command.');
         }
 
         const channel = message.channel;
@@ -37,9 +46,9 @@ module.exports = {
             const currentOverwrite = channel.permissionOverwrites.cache.get(everyoneRole.id);
 
             const previousValue = currentOverwrite
-                ? (currentOverwrite.deny.has(PermissionFlagsBits.SendMessages)
+                ? (currentOverwrite.deny.has('SendMessages')
                     ? false
-                    : (currentOverwrite.allow.has(PermissionFlagsBits.SendMessages) ? true : null))
+                    : (currentOverwrite.allow.has('SendMessages') ? true : null))
                 : null;
 
             saveLock(channel.id, previousValue);
@@ -53,15 +62,16 @@ module.exports = {
             const logChannel = message.guild.channels.cache.get(LOG_CHANNEL_ID);
 
             if (logChannel) {
-                const logContainer = new ContainerBuilder().addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(
-                        `## <:ShieldCheck:1502514212168274061> Slock Command Used!\n` +
-                        `-# **<:sig:1502514350014070795> Used By:** ${message.author}\n` +
-                        `**<:Comment:1502512880493400196> Reason:** ${reason}\n` +
-                        `**<:Dot:1502513706347528213> Channel:** ${channel}\n` +
-                        `**<:Calendar:1502513561866473734> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
-                    )
-                );
+                const logContainer = new ContainerBuilder()
+                    .addTextDisplayComponents(
+                        new TextDisplayBuilder().setContent(
+                            `## <:ShieldCheck:1502514212168274061> Slock Command Used!\n` +
+                            `-# **<:sig:1502514350014070795> Used By:** ${message.author}\n` +
+                            `**<:Comment:1502512880493400196> Reason:** ${reason}\n` +
+                            `**<:Dot:1502513706347528213> Channel:** ${channel}\n` +
+                            `**<:Calendar:1502513561866473734> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
+                        )
+                    );
 
                 await logChannel.send({
                     components: [logContainer],
