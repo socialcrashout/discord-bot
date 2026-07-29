@@ -4,12 +4,7 @@ const {
     MediaGalleryBuilder,
     MediaGalleryItemBuilder,
     MessageFlags,
-    AttachmentBuilder,
 } = require('discord.js');
-const path = require('path');
-
-// path to footer image (place footer.webp in an "assets" folder next to utils/)
-const FOOTER_IMAGE_PATH = path.join(__dirname, '..', 'assets', 'footer.webp');
 
 // config
 const THANK_YOU_CHANNEL_ID = '1502517147673563266';
@@ -79,8 +74,6 @@ async function sendClanTagEquipEmbed(client, user, clanTagInfo) {
             return;
         }
 
-        const footerAttachment = new AttachmentBuilder(FOOTER_IMAGE_PATH, { name: 'footer.webp' });
-
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
@@ -89,13 +82,12 @@ async function sendClanTagEquipEmbed(client, user, clanTagInfo) {
             )
             .addMediaGalleryComponents(
                 new MediaGalleryBuilder().addItems(
-                    new MediaGalleryItemBuilder().setURL('attachment://footer.webp')
+                    new MediaGalleryItemBuilder().setURL(FOOTER_IMAGE_URL)
                 )
             );
 
         await thankYouChannel.send({
             components: [container],
-            files: [footerAttachment],
             flags: MessageFlags.IsComponentsV2,
         });
 
