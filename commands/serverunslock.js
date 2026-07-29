@@ -9,7 +9,7 @@ const {
 const { getLockState, clearLockState } = require('../utils/serverLock');
 
 const LOG_CHANNEL_ID = '15064508702699069448';
-const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /serverunlock
+const ALLOWED_ROLE_ID = '1504311819458580531'; // Replace with the role ID that can use /serverunlock
 
 module.exports = {
     data: new SlashCommandBuilder()
