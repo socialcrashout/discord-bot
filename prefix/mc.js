@@ -19,9 +19,9 @@ module.exports = {
 <:boost:1532100194840219849> **Server Boosts:** ${boosts}
 
 <:stats:1532105130877517966> **Growth Statistics:**
-Past 24 Hours: 0
-Past 7 Days: 0
-Past 30 Days: 0
+<:Dot:1502513706347528213> Past 24 Hours: 0
+<:Dot:1502513706347528213> Past 7 Days: 0
+<:Dot:1502513706347528213> Past 30 Days: 0
 `
                 },
                 {
