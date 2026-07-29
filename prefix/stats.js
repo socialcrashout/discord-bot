@@ -6,8 +6,6 @@ const {
     TextDisplayBuilder,
     MediaGalleryBuilder,
     MediaGalleryItemBuilder,
-    SeparatorBuilder,
-    SeparatorSpacingSize,
     MessageFlags,
 } = require("discord.js");
 
@@ -76,11 +74,6 @@ module.exports = {
 
 
         container
-            .addSeparatorComponents(
-                new SeparatorBuilder()
-                    .setSpacing(SeparatorSpacingSize.Small)
-            )
-
             .addTextDisplayComponents(
                 new TextDisplayBuilder()
                     .setContent("## Review Statistics")
@@ -98,11 +91,6 @@ ${STAR_EMOJI} - ${ratings[1]} reviews
 **Total Reviews:** ${totalReviews}
 **Average Rating:** ${average} / 5`
                     )
-            )
-
-            .addSeparatorComponents(
-                new SeparatorBuilder()
-                    .setSpacing(SeparatorSpacingSize.Small)
             )
 
             .addMediaGalleryComponents(
