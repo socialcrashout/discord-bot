@@ -5,7 +5,8 @@ const {
   TextInputBuilder,
   TextInputStyle,
   ActionRowBuilder,
-  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags,
 } = require("discord.js");
 const giveaways = require("../utils/giveawayManager");
 
@@ -148,20 +149,11 @@ async function handleEdit(interaction, client) {
     .setRequired(false)
     .setMaxLength(1000);
 
-  const banner = new TextInputBuilder()
-    .setCustomId("banner")
-    .setLabel("Banner URL (type none to clear)")
-    .setStyle(TextInputStyle.Short)
-    .setValue(giveaway.bannerUrl || "")
-    .setRequired(false)
-    .setMaxLength(500);
-
   modal.addComponents(
     new ActionRowBuilder().addComponents(prize),
     new ActionRowBuilder().addComponents(winners),
     new ActionRowBuilder().addComponents(duration),
     new ActionRowBuilder().addComponents(requirements),
-    new ActionRowBuilder().addComponents(banner),
   );
 
   return interaction.showModal(modal);
@@ -202,12 +194,21 @@ async function handleList(interaction, client) {
   const list = giveaways.getActiveByGuild(interaction.guildId);
   if (!list.length) return interaction.reply({ content: "There are no active giveaways in this server.", ephemeral: true });
 
-  const embed = new EmbedBuilder()
-    .setTitle("🎉 Active Giveaways")
-    .setColor(0xF2C4C0)
-    .setDescription(
-      list.map(g => `**${g.prize}** — \`${g.id}\` — ends <t:${Math.floor(g.endTime / 1000)}:R> — ${g.entries.length} entries`).join("\n")
+  // Components V2 container — no accent color set, matches the giveaway
+  // posts themselves instead of using the old colored EmbedBuilder.
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents((t) => t.setContent("🎉 **Active Giveaways**"))
+    .addSeparatorComponents((s) => s.setDivider(true))
+    .addTextDisplayComponents((t) =>
+      t.setContent(
+        list
+          .map(g => `**${g.prize}** — \`${g.id}\` — ends <t:${Math.floor(g.endTime / 1000)}:R> — ${g.entries.length} entries`)
+          .join("\n")
+      )
     );
 
-  return interaction.reply({ embeds: [embed], ephemeral: true });
+  return interaction.reply({
+    components: [container],
+    flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+  });
 }
