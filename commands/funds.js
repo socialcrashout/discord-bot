@@ -11,7 +11,9 @@ const {
     errorMessage,
 } = require('../utils/fundsHelpers');
 
-const ALLOWED_ROLE_ID = '1504311819458580531'; // Replace with the role ID that can use /funds
+const ALLOWED_ROLE_IDS = [
+    '1504311819458580531'
+]; // Role ID that can use /funds
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -19,6 +21,7 @@ module.exports = {
         .setDescription('Check Roblox group funds and pending revenue.'),
 
     execute: async (interaction, client) => {
+
         // Existing permission check
         if (!hasPermission(interaction.member)) {
             return interaction.reply({
@@ -28,7 +31,7 @@ module.exports = {
         }
 
         // Role restriction
-        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+        if (!interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id))) {
             return interaction.reply({
                 content: 'You do not have the required role to use this command.',
                 flags: MessageFlags.Ephemeral,
@@ -50,6 +53,7 @@ module.exports = {
                 components: [buildFundsContainer(data)],
                 flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
             });
+
         } catch (err) {
             await interaction.editReply({
                 content: errorMessage(err),
