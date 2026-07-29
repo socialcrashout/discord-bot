@@ -1,43 +1,37 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 const getNextCase = require('../utils/getNextCase');
+const { addModLog } = require('../utils/modlogs');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
 
-// Parses strings like "10m", "1h", "2d" into milliseconds. Max allowed by Discord is 28 days.
-function parseDuration(input) {
-    const match = /^(\d+)\s*(s|m|h|d)$/i.exec(input.trim());
-    if (!match) return null;
-
-    const amount = parseInt(match[1], 10);
-    const unit = match[2].toLowerCase();
-    const multipliers = { s: 1000, m: 60 * 1000, h: 60 * 60 * 1000, d: 24 * 60 * 60 * 1000 };
-    const ms = amount * multipliers[unit];
-
-    const maxMs = 28 * 24 * 60 * 60 * 1000;
-    if (ms > maxMs) return null;
-
-    return ms;
-}
-
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('timeout')
-        .setDescription('Timeout (mute) a member for a set duration')
+        .setName('kick')
+        .setDescription('Kick a member from the server')
         .addUserOption(option =>
             option.setName('target')
-                .setDescription('The member to timeout')
-                .setRequired(true))
-        .addStringOption(option =>
-            option.setName('duration')
-                .setDescription('Duration, e.g. 10m, 1h, 2d (max 28d)')
+                .setDescription('The member to kick')
                 .setRequired(true))
         .addStringOption(option =>
             option.setName('reason')
-                .setDescription('Reason for the timeout')
+                .setDescription('Reason for the kick')
                 .setRequired(false))
-        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
+        .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
 
     async execute(interaction) {
+        if (!interaction.member.permissions.has(PermissionFlagsBits.KickMembers)) {
+            return interaction.reply({
+                components: [new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent('You do not have permission to kick members.')
+                )],
+                flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+            });
+        }
+
+        const target = interaction.options.getUser('target');
+        const reason = interaction.options.getString('reason') || 'No reason provided';
+        const member = interaction.guild.members.cache.get(target.id);
+
         const errorReply = (text) => interaction.reply({
             components: [new ContainerBuilder().addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(text)
@@ -45,38 +39,38 @@ module.exports = {
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
-        if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
-            return errorReply('You do not have permission to timeout members.');
-        }
-
-        const target = interaction.options.getUser('target');
-        const durationInput = interaction.options.getString('duration');
-        const reason = interaction.options.getString('reason') || 'No reason provided';
-        const member = interaction.guild.members.cache.get(target.id);
-
         if (!member) return errorReply('That user is not in this server.');
-        if (member.id === interaction.user.id) return errorReply('You cannot timeout yourself.');
-        if (!member.moderatable) return errorReply('I cannot timeout this member. They may have a higher role than me or I lack permissions.');
-
-        const ms = parseDuration(durationInput);
-        if (!ms) return errorReply('Invalid duration. Use a format like `10m`, `1h`, or `2d` (max 28d).');
+        if (!member.kickable) return errorReply('I cannot kick this member. They may have a higher role than me or I lack permissions.');
+        if (member.id === interaction.user.id) return errorReply('You cannot kick yourself.');
 
         try {
-            await member.timeout(ms, reason);
+            await member.kick(reason);
 
             const caseNumber = await getNextCase(interaction.guild.id);
+            const timestamp = Math.floor(Date.now() / 1000);
+
+            addModLog(interaction.guild.id, {
+                caseNumber,
+                type: 'kick',
+                userId: target.id,
+                userTag: target.tag,
+                moderatorId: interaction.user.id,
+                moderatorTag: interaction.user.tag,
+                reason,
+                timestamp,
+            });
 
             // Log to mod-log channel
             const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
             if (logChannel) {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
-                        `## <:ShieldCheck:1502514212168274061> Timeout Command Used! | Case #${caseNumber}\n` +
+                        `## <:ShieldCheck:1502514212168274061> Kick Command Used! | Case #${caseNumber}\n` +
                         `-# **<:sig:1502514350014070795> Used By:** ${interaction.user}\n` +
-                        `**<:person:1502514200705105981> User Timed Out:** ${target.tag} (${target.id})\n` +
+                        `**<:person:1502514200705105981> User Kicked:** ${target.tag} (${target.id})\n` +
                         `**<:Comment:1502512880493400196> Reason:** ${reason}\n` +
                         `**<:Dot:1502513706347528213> Channel:** ${interaction.channel}\n` +
-                        `**<:Calendar:1502513561866473734> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
+                        `**<:Calendar:1502513561866473734> Timestamp:** <t:${timestamp}:F>`
                     )
                 );
 
@@ -89,10 +83,9 @@ module.exports = {
 
             const container = new ContainerBuilder().addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `**Member Timed Out** | Case #${caseNumber}\n` +
+                    `**Member Kicked** | Case #${caseNumber}\n` +
                     `**User:** ${target.tag} (${target.id})\n` +
                     `**Moderator:** ${interaction.user.tag}\n` +
-                    `**Duration:** ${durationInput}\n` +
                     `**Reason:** ${reason}`
                 )
             );
@@ -100,7 +93,7 @@ module.exports = {
             await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
         } catch (error) {
             console.error(error);
-            await errorReply('Something went wrong while trying to timeout that member.');
+            await errorReply('Something went wrong while trying to kick that member.');
         }
     },
 };
