@@ -1,7 +1,15 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    MessageFlags,
+} = require('discord.js');
+
 const { getLock, clearLock } = require('../utils/channelLock');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /unslock
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,14 +23,22 @@ module.exports = {
 
     async execute(interaction) {
         const errorReply = (text) => interaction.reply({
-            components: [new ContainerBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(text)
-            )],
+            components: [
+                new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(text)
+                )
+            ],
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
+        // Permission check
         if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
             return errorReply('You do not have permission to manage channels.');
+        }
+
+        // Role restriction
+        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return errorReply('You do not have the required role to use this command.');
         }
 
         const channel = interaction.channel;
@@ -36,10 +52,16 @@ module.exports = {
         const everyoneRole = interaction.guild.roles.everyone;
 
         try {
-            await channel.permissionOverwrites.edit(everyoneRole, { SendMessages: previousValue }, { reason });
+            await channel.permissionOverwrites.edit(
+                everyoneRole,
+                { SendMessages: previousValue },
+                { reason }
+            );
+
             clearLock(channel.id);
 
             const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+
             if (logChannel) {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
@@ -58,7 +80,10 @@ module.exports = {
                 });
             }
 
-            await interaction.reply({ content: `🔓` });
+            await interaction.reply({
+                content: '🔓',
+            });
+
         } catch (error) {
             console.error(error);
             await errorReply('Something went wrong while unlocking this channel.');
