@@ -1,7 +1,15 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    MessageFlags,
+} = require('discord.js');
+
 const { removeWarningByCase } = require('../utils/warnings');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /clearwarn
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,14 +23,22 @@ module.exports = {
 
     async execute(interaction) {
         const errorReply = (text) => interaction.reply({
-            components: [new ContainerBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(text)
-            )],
+            components: [
+                new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(text)
+                )
+            ],
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
+        // Permission check
         if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
             return errorReply('You do not have permission to clear warnings.');
+        }
+
+        // Role restriction
+        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return errorReply('You do not have the required role to use this command.');
         }
 
         const caseNumber = interaction.options.getInteger('case');
@@ -33,6 +49,7 @@ module.exports = {
         }
 
         const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+
         if (logChannel) {
             const logContainer = new ContainerBuilder().addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
@@ -61,6 +78,9 @@ module.exports = {
             )
         );
 
-        await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+        await interaction.reply({
+            components: [container],
+            flags: MessageFlags.IsComponentsV2,
+        });
     },
 };
