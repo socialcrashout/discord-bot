@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 const getNextCase = require('../utils/getNextCase');
+const { addModLog } = require('../utils/modlogs');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
 
@@ -52,6 +53,18 @@ module.exports = {
             });
 
             const caseNumber = await getNextCase(interaction.guild.id);
+            const timestamp = Math.floor(Date.now() / 1000);
+
+            addModLog(interaction.guild.id, {
+                caseNumber,
+                type: 'ban',
+                userId: target.id,
+                userTag: target.tag,
+                moderatorId: interaction.user.id,
+                moderatorTag: interaction.user.tag,
+                reason,
+                timestamp,
+            });
 
             // Log to mod-log channel
             const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
@@ -63,7 +76,7 @@ module.exports = {
                         `**<:user:1530778349184618627> User Banned:** ${target.tag} (${target.id})\n` +
                         `**<:Comment:1530774457961025618> Reason:** ${reason}\n` +
                         `**<:Dot:1530774492412907721> Channel:** ${interaction.channel}\n` +
-                        `**<:Calendar:1530778367966843010> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
+                        `**<:Calendar:1530778367966843010> Timestamp:** <t:${timestamp}:F>`
                     )
                 );
 
