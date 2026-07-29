@@ -1,7 +1,16 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags, ChannelType } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    MessageFlags,
+    ChannelType,
+} = require('discord.js');
+
 const { saveLockState, getLockState } = require('../utils/serverLock');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /serverslock
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,14 +24,22 @@ module.exports = {
 
     async execute(interaction) {
         const errorReply = (text) => interaction.reply({
-            components: [new ContainerBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(text)
-            )],
+            components: [
+                new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(text)
+                )
+            ],
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
+        // Permission check
         if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
             return errorReply('You do not have permission to manage channels.');
+        }
+
+        // Role restriction
+        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return errorReply('You do not have the required role to use this command.');
         }
 
         if (getLockState(interaction.guild.id)) {
@@ -31,7 +48,9 @@ module.exports = {
 
         const reason = interaction.options.getString('reason') || 'No reason provided';
 
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        await interaction.deferReply({
+            flags: MessageFlags.Ephemeral,
+        });
 
         const everyoneRole = interaction.guild.roles.everyone;
         const textChannels = interaction.guild.channels.cache.filter(
@@ -44,15 +63,27 @@ module.exports = {
         for (const channel of textChannels.values()) {
             try {
                 const currentOverwrite = channel.permissionOverwrites.cache.get(everyoneRole.id);
+
                 const previousValue = currentOverwrite
-                    ? (currentOverwrite.deny.has(PermissionFlagsBits.SendMessages)
-                        ? false
-                        : (currentOverwrite.allow.has(PermissionFlagsBits.SendMessages) ? true : null))
+                    ? (
+                        currentOverwrite.deny.has(PermissionFlagsBits.SendMessages)
+                            ? false
+                            : (
+                                currentOverwrite.allow.has(PermissionFlagsBits.SendMessages)
+                                    ? true
+                                    : null
+                            )
+                    )
                     : null;
 
                 channelStates[channel.id] = previousValue;
 
-                await channel.permissionOverwrites.edit(everyoneRole, { SendMessages: false }, { reason });
+                await channel.permissionOverwrites.edit(
+                    everyoneRole,
+                    { SendMessages: false },
+                    { reason }
+                );
+
                 lockedCount++;
             } catch (err) {
                 console.error(`Failed to lock channel ${channel.id}:`, err);
@@ -62,6 +93,7 @@ module.exports = {
         saveLockState(interaction.guild.id, channelStates);
 
         const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+
         if (logChannel) {
             const logContainer = new ContainerBuilder().addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
@@ -80,6 +112,8 @@ module.exports = {
             });
         }
 
-        await interaction.editReply({ content: `🔒` });
+        await interaction.editReply({
+            content: '🔒',
+        });
     },
 };
