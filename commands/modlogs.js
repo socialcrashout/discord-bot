@@ -8,7 +8,12 @@ const {
 
 const { getLogsForUser } = require('../utils/modlogs');
 
-const ALLOWED_ROLE_ID = '1504311819458580531,1504313264576925757,1504312910862880879,1504320706341502996'; // Replace with the role ID that can use /modlogs
+const ALLOWED_ROLE_IDS = [
+    '1504311819458580531',
+    '1504313264576925757',
+    '1504312910862880879',
+    '1504320706341502996'
+];
 
 const TYPE_LABELS = {
     warn: 'Warn',
@@ -38,13 +43,11 @@ module.exports = {
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
-        // Permission check
         if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
             return errorReply('You do not have permission to view moderation logs.');
         }
 
-        // Role restriction
-        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+        if (!ALLOWED_ROLE_IDS.some(roleId => interaction.member.roles.cache.has(roleId))) {
             return errorReply('You do not have the required role to use this command.');
         }
 
