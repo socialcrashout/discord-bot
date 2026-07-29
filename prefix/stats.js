@@ -15,7 +15,7 @@ const {
 
 const REVIEWS_PATH = path.join(__dirname, "..", "data", "reviews.json");
 
-const STAR_EMOJI = "⭐"; // Change your emoji here
+const STAR_EMOJI = "<:Star:1531882389062684792>"; // Change your emoji here
 
 const FOOTER_IMAGE_URL =
     "https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw";
