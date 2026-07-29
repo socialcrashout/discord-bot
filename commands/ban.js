@@ -1,8 +1,16 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    MessageFlags,
+} = require('discord.js');
+
 const getNextCase = require('../utils/getNextCase');
 const { addModLog } = require('../utils/modlogs');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE'; // Replace with the role ID that can use /ban
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -26,14 +34,22 @@ module.exports = {
 
     async execute(interaction) {
         const errorReply = (text) => interaction.reply({
-            components: [new ContainerBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(text)
-            )],
+            components: [
+                new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(text)
+                )
+            ],
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
+        // Permission check
         if (!interaction.member.permissions.has(PermissionFlagsBits.BanMembers)) {
             return errorReply('You do not have permission to ban members.');
+        }
+
+        // Role restriction
+        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return errorReply('You do not have the required role to use this command.');
         }
 
         const target = interaction.options.getUser('target');
@@ -42,8 +58,13 @@ module.exports = {
         const member = interaction.guild.members.cache.get(target.id);
 
         if (member) {
-            if (!member.bannable) return errorReply('I cannot ban this member. They may have a higher role than me or I lack permissions.');
-            if (member.id === interaction.user.id) return errorReply('You cannot ban yourself.');
+            if (!member.bannable) {
+                return errorReply('I cannot ban this member. They may have a higher role than me or I lack permissions.');
+            }
+
+            if (member.id === interaction.user.id) {
+                return errorReply('You cannot ban yourself.');
+            }
         }
 
         try {
@@ -68,6 +89,7 @@ module.exports = {
 
             // Log to mod-log channel
             const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+
             if (logChannel) {
                 const logContainer = new ContainerBuilder().addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
@@ -96,7 +118,11 @@ module.exports = {
                 )
             );
 
-            await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+            await interaction.reply({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2,
+            });
+
         } catch (error) {
             console.error(error);
             await errorReply('Something went wrong while trying to ban that member.');
