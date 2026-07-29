@@ -27,7 +27,7 @@ const CONFIG = {
     // (use "<a:name:id>" instead of "<:name:id>" if the emoji is animated).
     // Leave the defaults if you just want plain unicode emoji.
     EMOJIS: {
-        title: "🎉",     // shown next to the prize in the title line
+        title: "<:confetti:1502514534298943509>",     // shown next to the prize in the title line
         enter: "<:Star:1531882389062684792>",     // shown on the "Enter" button
         ended: "🔒",     // shown on the disabled "Ended" button
         entries: "👥",   // shown next to the entries count
