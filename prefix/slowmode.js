@@ -1,6 +1,11 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 
-const ALLOWED_ROLE_ID = '1504311819458580531,1504313264576925757,1504312910862880879';
+const ALLOWED_ROLE_IDS = [
+    '1504311819458580531',
+    '1504313264576925757',
+    '1504312910862880879'
+];
+
 const LOG_CHANNEL_ID = '1506450870269906944';
 
 // Parses strings like "10s", "5m", "1h" into seconds. Discord's max slowmode is 6 hours.
@@ -41,7 +46,11 @@ module.exports = {
         });
 
         // Role restriction
-        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+        const hasRole = ALLOWED_ROLE_IDS.some(roleId =>
+            message.member.roles.cache.has(roleId)
+        );
+
+        if (!hasRole) {
             return errorReply('You do not have permission to use this command.');
         }
 
@@ -72,7 +81,6 @@ module.exports = {
 
             await message.delete().catch(() => {});
 
-            // Logging
             const logChannel = message.guild.channels.cache.get(LOG_CHANNEL_ID);
 
             if (logChannel) {
