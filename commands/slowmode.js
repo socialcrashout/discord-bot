@@ -8,7 +8,7 @@ const {
 } = require('discord.js');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
-const ALLOWED_ROLE_ID = '1504311819458580531'; // Replace with the role ID that can use /slowmode
+const ALLOWED_ROLE_ID = '1504311819458580531,1504313264576925757,1504312910862880879'; // Replace with the role ID that can use /slowmode
 
 // Parses strings like "10s", "5m", "1h" into seconds. Discord's max slowmode is 6 hours.
 function parseDuration(input) {
