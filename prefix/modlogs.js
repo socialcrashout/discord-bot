@@ -1,6 +1,8 @@
 const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 const { getLogsForUser } = require('../utils/modlogs');
 
+const REQUIRED_ROLE_ID = '1504311819458580531,1504313264576925757,1504312910862880879,1504320706341502996';
+
 const TYPE_LABELS = {
     warn: 'Warn',
     kick: 'Kick',
@@ -19,6 +21,10 @@ module.exports = {
             )],
             flags: MessageFlags.IsComponentsV2,
         });
+
+        if (!message.member.roles.cache.has(REQUIRED_ROLE_ID)) {
+            return errorReply('<:warning:1531049700520624278> You do not have permission to use this command.');
+        }
 
         if (!message.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
             return errorReply('<:warning:1531049700520624278> You do not have permission to view mod logs.');
