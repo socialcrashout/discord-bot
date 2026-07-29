@@ -51,7 +51,7 @@ module.exports = {
 <:person:1502514200705105981> **Total Members:** ${totalMembers.toLocaleString()}
 <:boost:1532100194840219849> **Server Boosts:** ${boosts}
 
-<:stats_nlc:1532100287215440115> **Growth Statistics:**
+<:stats:1532105130877517966> **Growth Statistics:**
 Past 24 Hours: ${format(growth24)}
 Past 7 Days: ${format(growth7)}
 Past 30 Days: ${format(growth30)}
