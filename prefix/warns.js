@@ -1,10 +1,13 @@
-const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, MessageFlags } = require('discord.js');
+const { ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, MessageFlags } = require('discord.js');
 const { getWarningsForUser } = require('../utils/warnings');
+
+const ALLOWED_ROLE_ID = 'ROLE_ID_HERE';
 
 module.exports = {
     name: 'warns',
     description: 'View all warnings a member has',
     // Usage: -warns @user
+
     async execute(message, args) {
         const errorReply = (text) => message.reply({
             components: [new ContainerBuilder().addTextDisplayComponents(
@@ -13,20 +16,27 @@ module.exports = {
             flags: MessageFlags.IsComponentsV2,
         });
 
-        if (!message.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
             return errorReply('<:WarningIcon:1508245066135765034> You do not have permission to view warnings.');
         }
 
         const target = message.mentions.users?.first();
-        if (!target) return errorReply('<:WarningIcon:1508245066135765034> Please mention a member. Usage: `-warns @user`');
+
+        if (!target) {
+            return errorReply('<:WarningIcon:1508245066135765034> Please mention a member. Usage: `-warns @user`');
+        }
 
         const warnings = getWarningsForUser(message.guild.id, target.id);
 
         if (warnings.length === 0) {
             return message.channel.send({
-                components: [new ContainerBuilder().addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`**${target.tag}** has no warnings.`)
-                )],
+                components: [
+                    new ContainerBuilder().addTextDisplayComponents(
+                        new TextDisplayBuilder().setContent(
+                            `**${target.tag}** has no warnings.`
+                        )
+                    )
+                ],
                 flags: MessageFlags.IsComponentsV2,
             });
         }
@@ -42,6 +52,7 @@ module.exports = {
 
         sorted.forEach((warning) => {
             container.addSeparatorComponents(new SeparatorBuilder());
+
             container.addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
                     `**<:Dot:1502513706347528213> Case #${warning.caseNumber}**\n` +
