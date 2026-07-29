@@ -26,8 +26,7 @@ const CONFIG = {
     },
 
     TEXT: {
-        titleLine: "{titleEmoji} **{prize}**",
-        idLine: "Giveaway ID: {id}",
+        titleLine: "{titleEmoji} ##{prize}##",
         durationLineActive: "{durationEmoji} **Duration:** <t:{endTimestamp}:R>",
         durationLineEnded: "{durationEmoji} **Duration:** Ended",
         entriesLine: "{entriesEmoji} **Entries:** {entryCount}",
