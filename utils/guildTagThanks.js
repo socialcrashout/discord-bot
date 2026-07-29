@@ -77,8 +77,8 @@ async function sendClanTagEquipEmbed(client, user, clanTagInfo) {
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `## <:confetti:1502514532331946006> Thanks for your support\n` +
-                    `Thanks, ${user} — you just equipped our clan tag! <:cheers:1502514532331946006>`
+                    `## <:confetti:1502514532331946006> Clan Tag Equipped\n` +
+                    `Thanks, ${user} — you've successfully equipped our clan tag. Thanks for supporting us! <:cheers:1502514532331946006>`
                 )
             )
             .addMediaGalleryComponents(
