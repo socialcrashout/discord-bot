@@ -8,8 +8,8 @@ const {
 
 const { getLockState, clearLockState } = require('../utils/serverLock');
 
-const LOG_CHANNEL_ID = '15064508702699069448';
-const ALLOWED_ROLE_ID = '1504311819458580531'; // Replace with the role ID that can use /serverunlock
+const LOG_CHANNEL_ID = '1506450870269906944';
+const ALLOWED_ROLE_ID = '1504311819458580531';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -31,12 +31,10 @@ module.exports = {
             flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         });
 
-        // Permission check
         if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
             return errorReply('You do not have permission to manage channels.');
         }
 
-        // Role restriction
         if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
             return errorReply('You do not have the required role to use this command.');
         }
@@ -58,6 +56,7 @@ module.exports = {
 
         for (const [channelId, previousValue] of Object.entries(lockState)) {
             const channel = interaction.guild.channels.cache.get(channelId);
+
             if (!channel) continue;
 
             try {
@@ -68,8 +67,8 @@ module.exports = {
                 );
 
                 unlockedCount++;
-            } catch (err) {
-                console.error(`Failed to unlock channel ${channelId}:`, err);
+            } catch (error) {
+                console.error(`Failed to unlock channel ${channelId}:`, error);
             }
         }
 
