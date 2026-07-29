@@ -1,37 +1,24 @@
 /**
- * .mode Verification System
+ * .mode Verification System — commands/verification.js
  * -------------------------------------------------------
+ * Fits your existing command-handler pattern: this file exports
+ * { data, execute } like your other files in commands/ (ban.js,
+ * kick.js, etc). It does NOT create its own client, does NOT
+ * call client.login, and does NOT register commands itself —
+ * your existing loader/registration script already does that for
+ * every file in commands/, and doing it again here is what wiped
+ * your other slash commands last time.
+ *
  * Uses Discord Components V2 (Container / MediaGallery / TextDisplay)
- * to render the verification message exactly like your reference
- * screenshots — banner, body text, footer, all in one bordered
- * container with NO accent color strip.
+ * for the message — banner, body text, footer, all in one bordered
+ * container with no accent color strip.
  *
- * Requires: discord.js v14.17.0 or newer (Components V2 support)
- *   npm install discord.js@latest
- *
- * -------------------------------------------------------
- * SETUP — fill these in before running
- * -------------------------------------------------------
- * Token is read from .env (needs a line like: TOKEN=your_bot_token_here)
- *   npm install dotenv
+ * Requires: discord.js v14.17.0+  (npm install discord.js@latest)
  */
-require('dotenv').config();
-
-const CONFIG = {
-  TOKEN: process.env.DISCORD_TOKEN,                      // bot token, loaded from .env
-  GUILD_ID: '1502510812441608222',               // .mode server id (from your ticket link)
-  TICKET_CHANNEL_ID: '1502793438754770976',      // #tickets, used in the body text
-  VERIFIED_ROLE_ID: '1504325783634841600',     // role granted on verify
-  LOG_CHANNEL_ID: '1532078127084343407',         // where verification logs are posted
-  BANNER_URL: 'https://yumi.onl/api/files/6a6a38b554d6927723c15003/raw',
-  FOOTER_URL: 'https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw',
-  DOT_EMOJI: '<:Dot:1502513706347528213>',
-};
 
 const {
-  Client,
-  GatewayIntentBits,
-  Events,
+  SlashCommandBuilder,
+  PermissionFlagsBits,
   MessageFlags,
   ContainerBuilder,
   TextDisplayBuilder,
@@ -42,30 +29,33 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  SlashCommandBuilder,
-  PermissionFlagsBits,
-  REST,
-  Routes,
 } = require('discord.js');
 
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
-});
+// ---------------------------------------------------------
+// Fill these in
+// ---------------------------------------------------------
+const CONFIG = {
+  TICKET_CHANNEL_ID: '1502793438754770976',      // #tickets
+  VERIFIED_ROLE_ID: 'YOUR_VERIFIED_ROLE_ID',     // role granted on verify
+  LOG_CHANNEL_ID: 'YOUR_LOG_CHANNEL_ID',         // verification log channel
+  BANNER_URL: 'https://yumi.onl/api/files/6a6a38b554d6927723c15003/raw',
+  FOOTER_URL: 'https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw',
+  DOT_EMOJI: '<:Dot:1502513706347528213>',
+};
 
-// ---------------------------------------------------------
-// Build the main verification message (Components V2)
-// ---------------------------------------------------------
+// This customId is how your main interaction handler will recognize
+// the button click below — see wiring instructions at the bottom.
+const VERIFY_BUTTON_ID = 'mode_verify';
+
 function buildVerificationContainer() {
   const container = new ContainerBuilder(); // no .setAccentColor() -> no accent strip
 
-  // Banner image
   container.addMediaGalleryComponents(
     new MediaGalleryBuilder().addItems(
       new MediaGalleryItemBuilder().setURL(CONFIG.BANNER_URL)
     )
   );
 
-  // Body text
   container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(
       `Welcome to **.mode**! Before you continue in the server, please verify your account. ` +
@@ -80,7 +70,6 @@ function buildVerificationContainer() {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
   );
 
-  // Footer image
   container.addMediaGalleryComponents(
     new MediaGalleryBuilder().addItems(
       new MediaGalleryItemBuilder().setURL(CONFIG.FOOTER_URL)
@@ -91,10 +80,9 @@ function buildVerificationContainer() {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
   );
 
-  // Verify button
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId('mode_verify')
+      .setCustomId(VERIFY_BUTTON_ID)
       .setLabel('Verify')
       .setStyle(ButtonStyle.Secondary)
       .setEmoji('✅')
@@ -104,12 +92,8 @@ function buildVerificationContainer() {
   return container;
 }
 
-// ---------------------------------------------------------
-// Build a small log container (posted to LOG_CHANNEL_ID)
-// ---------------------------------------------------------
 function buildLogContainer({ member, success, reason }) {
   const container = new ContainerBuilder();
-
   const status = success ? '✅ Verification Successful' : '⚠️ Verification Failed';
   const lines = [
     `**${status}**`,
@@ -117,96 +101,109 @@ function buildLogContainer({ member, success, reason }) {
     `Time: <t:${Math.floor(Date.now() / 1000)}:F>`,
   ];
   if (reason) lines.push(`Reason: ${reason}`);
-
-  container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(lines.join('\n'))
-  );
-
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(lines.join('\n')));
   return container;
 }
 
 // ---------------------------------------------------------
-// Slash command: /setup-verification
-// Posts the verification message in the current channel.
+// Handles the Verify button click. Call this from your main
+// InteractionCreate handler (see wiring notes below) — do NOT
+// add a second client.on(Events.InteractionCreate) anywhere.
 // ---------------------------------------------------------
-const setupCommand = new SlashCommandBuilder()
-  .setName('setup-verification')
-  .setDescription('Post the .mode verification message in this channel')
-  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild);
+async function handleVerifyButton(interaction) {
+  const member = interaction.member;
 
-async function registerCommands() {
-  const rest = new REST({ version: '10' }).setToken(CONFIG.TOKEN);
-  await rest.put(
-    Routes.applicationGuildCommands(client.user.id, CONFIG.GUILD_ID),
-    { body: [setupCommand.toJSON()] }
-  );
-  console.log('Slash commands registered.');
+  try {
+    if (member.roles.cache.has(CONFIG.VERIFIED_ROLE_ID)) {
+      await interaction.reply({
+        content: 'You are already verified.',
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
+    await member.roles.add(CONFIG.VERIFIED_ROLE_ID);
+
+    await interaction.reply({
+      content: '✅ You have been verified! You now have full access to the server.',
+      flags: MessageFlags.Ephemeral,
+    });
+
+    const logChannel = await interaction.client.channels.fetch(CONFIG.LOG_CHANNEL_ID);
+    await logChannel.send({
+      components: [buildLogContainer({ member, success: true })],
+      flags: MessageFlags.IsComponentsV2,
+    });
+  } catch (err) {
+    console.error('Verification error:', err);
+
+    await interaction.reply({
+      content: 'Something went wrong while verifying you. Please open a ticket for help.',
+      flags: MessageFlags.Ephemeral,
+    });
+
+    try {
+      const logChannel = await interaction.client.channels.fetch(CONFIG.LOG_CHANNEL_ID);
+      await logChannel.send({
+        components: [buildLogContainer({ member, success: false, reason: err.message })],
+        flags: MessageFlags.IsComponentsV2,
+      });
+    } catch (logErr) {
+      console.error('Failed to send log message:', logErr);
+    }
+  }
 }
 
-client.once(Events.ClientReady, async () => {
-  console.log(`Logged in as ${client.user.tag}`);
-  await registerCommands();
-});
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('setup-verification')
+    .setDescription('Post the .mode verification message in this channel')
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
-client.on(Events.InteractionCreate, async (interaction) => {
-  // --- Slash command handler ---
-  if (interaction.isChatInputCommand() && interaction.commandName === 'setup-verification') {
+  async execute(interaction) {
     const container = buildVerificationContainer();
     await interaction.channel.send({
       components: [container],
       flags: MessageFlags.IsComponentsV2,
     });
-    await interaction.reply({ content: 'Verification message posted.', flags: MessageFlags.Ephemeral });
-    return;
-  }
+    await interaction.reply({
+      content: 'Verification message posted.',
+      flags: MessageFlags.Ephemeral,
+    });
+  },
 
-  // --- Verify button handler ---
-  if (interaction.isButton() && interaction.customId === 'mode_verify') {
-    const member = interaction.member;
+  // exported so your main file can route the button click to it
+  VERIFY_BUTTON_ID,
+  handleVerifyButton,
+};
 
-    try {
-      if (member.roles.cache.has(CONFIG.VERIFIED_ROLE_ID)) {
-        await interaction.reply({
-          content: 'You are already verified.',
-          flags: MessageFlags.Ephemeral,
-        });
-        return;
-      }
-
-      await member.roles.add(CONFIG.VERIFIED_ROLE_ID);
-
-      await interaction.reply({
-        content: '✅ You have been verified! You now have full access to the server.',
-        flags: MessageFlags.Ephemeral,
-      });
-
-      // Log success
-      const logChannel = await client.channels.fetch(CONFIG.LOG_CHANNEL_ID);
-      await logChannel.send({
-        components: [buildLogContainer({ member, success: true })],
-        flags: MessageFlags.IsComponentsV2,
-      });
-    } catch (err) {
-      console.error('Verification error:', err);
-
-      await interaction.reply({
-        content: 'Something went wrong while verifying you. Please open a ticket for help.',
-        flags: MessageFlags.Ephemeral,
-      });
-
-      try {
-        const logChannel = await client.channels.fetch(CONFIG.LOG_CHANNEL_ID);
-        await logChannel.send({
-          components: [
-            buildLogContainer({ member, success: false, reason: err.message }),
-          ],
-          flags: MessageFlags.IsComponentsV2,
-        });
-      } catch (logErr) {
-        console.error('Failed to send log message:', logErr);
-      }
-    }
-  }
-});
-
-client.login(CONFIG.TOKEN);
+/**
+ * -------------------------------------------------------
+ * WIRING INTO YOUR EXISTING BOT
+ * -------------------------------------------------------
+ * 1. Drop this file in commands/ as verification.js (already done).
+ *    Your existing command loader should pick up `data` and `execute`
+ *    the same way it does for ban.js, kick.js, etc. — nothing extra
+ *    to register by hand, and nothing here will touch your other
+ *    commands.
+ *
+ * 2. Find wherever your bot already has ONE
+ *      client.on(Events.InteractionCreate, async (interaction) => { ... })
+ *    (there should only be this one, in your main file). Inside it,
+ *    alongside the existing slash-command dispatch, add a branch
+ *    for buttons:
+ *
+ *      const verification = require('./commands/verification.js');
+ *
+ *      if (interaction.isButton() && interaction.customId === verification.VERIFY_BUTTON_ID) {
+ *        await verification.handleVerifyButton(interaction);
+ *        return;
+ *      }
+ *
+ * 3. Restart the bot once. Since nothing here calls rest.put anymore,
+ *    your other commands won't disappear again.
+ *
+ * If your other slash commands are still missing right now, re-run
+ * whatever script/command your project normally uses to bulk-register
+ * all commands in commands/ — that will restore the full list.
+ */
