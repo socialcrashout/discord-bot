@@ -48,11 +48,8 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setDescription(`
-<:person:1502514200705105981> **Total Members:**
-${totalMembers.toLocaleString()}
-
-<:boost:1532100194840219849> **Server Boosts:**
-${boosts}
+<:person:1502514200705105981> **Total Members:** ${totalMembers.toLocaleString()}
+<:boost:1532100194840219849> **Server Boosts:** ${boosts}
 
 <:stats_nlc:1532100287215440115> **Growth Statistics:**
 Past 24 Hours: ${format(growth24)}
