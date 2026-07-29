@@ -1,49 +1,64 @@
-const { PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
+const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 const { getLock, clearLock } = require('../utils/channelLock');
 
+const ALLOWED_ROLE_ID = 'YOUR_ROLE_ID_HERE';
 const LOG_CHANNEL_ID = '1506450870269906944';
 
 module.exports = {
     name: 'unslock',
     description: 'Unlock the channel this command is run in',
+
     // Usage: -unslock reason...
     async execute(message, args) {
+
         const errorReply = (text) => message.reply({
-            components: [new ContainerBuilder().addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(text)
-            )],
+            components: [
+                new ContainerBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(text)
+                )
+            ],
             flags: MessageFlags.IsComponentsV2,
         });
 
-        if (!message.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
-            return errorReply('You do not have permission to manage channels.');
+        // Role restriction
+        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return errorReply('You do not have permission to use this command.');
         }
 
         const channel = message.channel;
         const previousValue = getLock(channel.id);
 
         if (previousValue === undefined) {
-            return errorReply('<:WarningIcon:1508245066135765034> This channel is not currently locked.');
+            return errorReply(
+                '<:WarningIcon:1508245066135765034> This channel is not currently locked.'
+            );
         }
 
         const reason = args.join(' ') || 'No reason provided';
         const everyoneRole = message.guild.roles.everyone;
 
         try {
-            await channel.permissionOverwrites.edit(everyoneRole, { SendMessages: previousValue }, { reason });
+            await channel.permissionOverwrites.edit(
+                everyoneRole,
+                { SendMessages: previousValue },
+                { reason }
+            );
+
             clearLock(channel.id);
 
             const logChannel = message.guild.channels.cache.get(LOG_CHANNEL_ID);
+
             if (logChannel) {
-                const logContainer = new ContainerBuilder().addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(
-                        `## <:ShieldCheck:1502514212168274061> Unslock Command Used!\n` +
-                        `-# **<:sig:1502514350014070795> Used By:** ${message.author}\n` +
-                        `**<:Comment:1502512880493400196> Reason:** ${reason}\n` +
-                        `**<:Dot:1502513706347528213> Channel:** ${channel}\n` +
-                        `**<:Calendar:1502513561866473734> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
-                    )
-                );
+                const logContainer = new ContainerBuilder()
+                    .addTextDisplayComponents(
+                        new TextDisplayBuilder().setContent(
+                            `## <:ShieldCheck:1502514212168274061> Unslock Command Used!\n` +
+                            `-# **<:sig:1502514350014070795> Used By:** ${message.author}\n` +
+                            `**<:Comment:1502512880493400196> Reason:** ${reason}\n` +
+                            `**<:Dot:1502513706347528213> Channel:** ${channel}\n` +
+                            `**<:Calendar:1502513561866473734> Timestamp:** <t:${Math.floor(Date.now() / 1000)}:F>`
+                        )
+                    );
 
                 await logChannel.send({
                     components: [logContainer],
@@ -53,6 +68,7 @@ module.exports = {
             }
 
             await message.channel.send('🔓');
+
         } catch (error) {
             console.error(error);
             await errorReply('Something went wrong while unlocking this channel.');
