@@ -1,43 +1,64 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 
-const ALLOWED_ROLE_ID = '1504311819458580531';
+const ALLOWED_ROLE_IDS = [
+    '1504311819458580531'
+];
+
 const LOG_CHANNEL_ID = '1506450870269906944';
 
 module.exports = {
-  name: "say",
-  async execute(message, args) {
+    name: "say",
+    async execute(message, args) {
 
-    if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) return;
+        const hasRole = ALLOWED_ROLE_IDS.some(roleId =>
+            message.member.roles.cache.has(roleId)
+        );
 
-    const content = args.join(" ");
-    if (!content) return;
+        if (!hasRole) {
+            return message.reply({
+                components: [
+                    new ContainerBuilder().addTextDisplayComponents(
+                        new TextDisplayBuilder().setContent(
+                            'You do not have permission to use this command.'
+                        )
+                    )
+                ],
+                flags: MessageFlags.IsComponentsV2,
+            });
+        }
 
-    await message.delete().catch(() => {});
+        const content = args.join(" ");
 
-    await message.channel.send(content);
+        if (!content) return;
 
-    // Log the usage
-    try {
-      const logChannel = message.guild.channels.cache.get(LOG_CHANNEL_ID);
-      if (logChannel) {
-        const container = new ContainerBuilder()
-          .addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(
-              `## <:ShieldCheck:1502514212168274061> Say Command Used!\n` +
-              `-# **<:sig:1502514350014070795> Used by:** ${message.author}\n` +
-              `**<:Comment:1502512880493400196> Said:** ${content}\n` +
-              `**<:Dot:1502513706347528213> Channel:** ${message.channel}`
-            )
-          );
+        await message.delete().catch(() => {});
 
-        await logChannel.send({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [] }, 
-        });
-      }
-    } catch (err) {
-      console.error('Failed to log say command:', err);
+        await message.channel.send(content);
+
+        // Log the usage
+        try {
+            const logChannel = message.guild.channels.cache.get(LOG_CHANNEL_ID);
+
+            if (logChannel) {
+                const container = new ContainerBuilder()
+                    .addTextDisplayComponents(
+                        new TextDisplayBuilder().setContent(
+                            `## <:ShieldCheck:1502514212168274061> Say Command Used!\n` +
+                            `-# **<:sig:1502514350014070795> Used by:** ${message.author}\n` +
+                            `**<:Comment:1502512880493400196> Said:** ${content}\n` +
+                            `**<:Dot:1502513706347528213> Channel:** ${message.channel}`
+                        )
+                    );
+
+                await logChannel.send({
+                    components: [container],
+                    flags: MessageFlags.IsComponentsV2,
+                    allowedMentions: { parse: [] },
+                });
+            }
+
+        } catch (err) {
+            console.error('Failed to log say command:', err);
+        }
     }
-  }
 };
