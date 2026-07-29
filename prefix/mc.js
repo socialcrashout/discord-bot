@@ -48,4 +48,4 @@ Past month: (+128)
     }
 });
 
-client.login("BOT_TOKEN");
+client.login("DISCORD_TOKEN");
