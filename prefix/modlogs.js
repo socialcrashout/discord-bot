@@ -43,7 +43,6 @@ module.exports = {
         const lines = shown.map(log =>
             `**Case #${log.caseNumber} — ${TYPE_LABELS[log.type] || log.type}**\n` +
             `> **Moderator:** ${log.moderatorTag}\n` +
-            (log.duration ? `> **Duration:** ${log.duration}\n` : '') +
             `> **Reason:** ${log.reason || 'No reason provided'}\n` +
             `> **Date:** <t:${log.timestamp}:F>`
         ).join('\n\n');
