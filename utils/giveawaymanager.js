@@ -28,7 +28,7 @@ const CONFIG = {
     // Leave the defaults if you just want plain unicode emoji.
     EMOJIS: {
         title: "🎉",     // shown next to the prize in the title line
-        enter: "🎉",     // shown on the "Enter" button
+        enter: "<:Star:1531882389062684792>",     // shown on the "Enter" button
         ended: "🔒",     // shown on the disabled "Ended" button
         entries: "👥",   // shown next to the entries count
         duration: "⏰",  // shown next to duration / ends-at
