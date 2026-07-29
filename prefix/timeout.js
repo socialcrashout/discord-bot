@@ -2,7 +2,13 @@ const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.
 const getNextCase = require('../utils/getNextCase');
 const { addModLog } = require('../utils/modlogs');
 
-const ALLOWED_ROLE_ID = '1504311819458580531,1504313264576925757,1504312910862880879,1504320706341502996';
+const ALLOWED_ROLE_IDS = [
+    '1504311819458580531',
+    '1504313264576925757',
+    '1504312910862880879',
+    '1504320706341502996'
+];
+
 const LOG_CHANNEL_ID = '1506450870269906944';
 
 // Parses strings like "10m", "1h", "2d" into milliseconds. Max 28 days.
@@ -44,7 +50,7 @@ module.exports = {
         });
 
         // Role restriction
-        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+        if (!message.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id))) {
             return errorReply('You do not have permission to use this command.');
         }
 
