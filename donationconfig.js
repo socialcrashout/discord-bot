@@ -26,8 +26,11 @@ module.exports = {
         // under-13s/restricted accounts, t-shirts still work).
         tshirtId: "PUT_TSHIRT_ID_HERE",
 
-        // Robux amounts shown in the dropdown. Add/remove/edit freely.
-        priceOptions: [50, 100, 250, 500, 1000, 2500, 5000],
+        // Users can now type any Robux amount they want (via a modal)
+        // instead of picking from a preset list. These just guard against
+        // typos / silly values — edit or remove as you like.
+        minPrice: 1,
+        maxPrice: 100000,
     },
 
     usd: {
