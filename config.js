@@ -88,7 +88,7 @@ Before opening a ticket, please check <#1502518130616963163> and the FAQ section
             description: "Report a staff member/user, partnership requests",
             emoji: "<:userquestion:1502514545791471628>",
             channelPrefix: "mgmt",
-            pingRoleId: "", // falls back to ids.supportRoleId
+            pingRoleId: "1504313264576925757", // falls back to ids.supportRoleId
             categoryId: "1518326666215161986",
         },
         {
