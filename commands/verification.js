@@ -62,7 +62,7 @@ const CONFIG = {
 
   // Dock (https://docs.docksys.xyz)
   DOCK_API_BASE: 'https://api.docksys.xyz',
-  DOCK_PID: 'YOUR_DOCK_PID',                       // <-- from your Dock dashboard: the PID your API key owns
+  DOCK_PID: 'y8koB7zUawW9.DixtX3.TQ9fI95oHF30D99EjbywwoEWSpSF',                       // <-- from your Dock dashboard: the PID your API key owns
 
   ROBLOX_ACCOUNT_EMOJI: '🐧',                      // shown next to a linked Roblox username, swap for a custom emoji if you like
   SERVER_EMOJI: '🏔️',                              // shown next to the server name on the success screen
