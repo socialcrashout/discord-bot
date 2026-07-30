@@ -3,6 +3,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Collection, REST, Routes, Events  } = require('discord.js')
 const fs = require('fs')
 const path = require('path')
+const ticketManager = require('./lib/ticketManager')
 
 const { DISCORD_TOKEN, CLIENT_ID, GUILD_ID, PREFIX } = process.env;
 
@@ -157,10 +158,40 @@ client.on(Events.MessageCreate, async message => {
 });
 
 client.on(Events.InteractionCreate, async interaction => {
+    // Ticket system: category select menu on the panel
+    if (interaction.isStringSelectMenu()) {
+        if (interaction.customId === ticketManager.SELECT_ID) {
+            try {
+                await ticketManager.handleCategorySelect(interaction, client);
+            } catch (err) {
+                console.error("Error handling ticket category select:", err);
+            }
+        }
+        return;
+    }
+
     // Buttons (e.g. the .mode verification "Verify"/"Continue" buttons) are
     // handled here, separately from slash commands, since
     // isChatInputCommand() would otherwise skip them entirely.
     if (interaction.isButton()) {
+        // Ticket system: claim / close / close-confirm / close-cancel / escalate
+        const ticketButtonIds = [
+            ticketManager.BTN_CLAIM,
+            ticketManager.BTN_CLOSE,
+            ticketManager.BTN_CLOSE_CONFIRM,
+            ticketManager.BTN_CLOSE_CANCEL,
+            ticketManager.BTN_ESCALATE,
+        ];
+
+        if (ticketButtonIds.includes(interaction.customId)) {
+            try {
+                await ticketManager.handleButton(interaction, client);
+            } catch (err) {
+                console.error("Error handling ticket button:", err);
+            }
+            return;
+        }
+
         const verification = client.slashCommands.get("setup-verification");
 
         if (verification && interaction.customId === verification.VERIFY_BUTTON_ID) {
