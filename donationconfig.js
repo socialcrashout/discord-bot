@@ -20,7 +20,7 @@ module.exports = {
         universeId: "10151034895",
 
         // Asset used for accounts 16+ (game passes can be any price).
-        gamepassId: "PUT_GAMEPASS_ID_HERE",
+        gamepassId: "1893046976",
 
         // Asset used for accounts under 16 (game passes are hidden for
         // under-13s/restricted accounts, t-shirts still work).
