@@ -7,7 +7,7 @@ const {
 } = require("discord.js");
 
 // ==================== CONFIG ====================
-const SPONSORS_CHANNEL_ID = "YOUR_SPONSORS_CHANNEL_ID_HERE"; // <-- replace with real channel ID
+const SPONSORS_CHANNEL_ID = "1502517147673563266"; // <-- replace with real channel ID
 const BOOST_COOLDOWN = 60000; // 1 min (in ms) — prevents duplicate posts
 const FOOTER_IMAGE_URL = "https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw";
 const ROCKET_EMOJI = "<:roccket:1502514543333736591>";
