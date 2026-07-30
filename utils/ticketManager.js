@@ -207,10 +207,12 @@ async function handleCategorySelect(interaction) {
         });
     }
 
+    const parentId = category.categoryId || config.ids.ticketsCategoryId;
+
     const channel = await guild.channels.create({
         name: channelName,
         type: ChannelType.GuildText,
-        parent: config.ids.ticketsCategoryId || undefined,
+        parent: parentId || undefined,
         permissionOverwrites: overwrites,
         topic: `Ticket for ${interaction.user.tag} | category: ${category.label} | opener: ${interaction.user.id}`,
     });
