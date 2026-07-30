@@ -131,6 +131,7 @@ Hey there, {user}! Thanks for contacting us. We're happy to help with whatever y
 `**Ticket Escalated!**
 
 Hey there, {user}! Your ticket has been escalated to a higher-level staff member for further assistance. A member of the appropriate team will review your request and respond as soon as possible. Please remain patient while we look into your concern. Providing any additional details or information that may help resolve your issue is appreciated.
+
 Escalated by {staff}.`,
         pingText: "{user} {role}",
     },
