@@ -15,7 +15,7 @@ module.exports = {
         ticketsCategoryId: "1518326644400455721",
 
         // Where finished transcripts get logged/posted
-        transcriptLogChannelId: "PUT_TRANSCRIPT_LOG_CHANNEL_ID_HERE",
+        transcriptLogChannelId: "1502789305721032704",
 
         // Roles that can see/claim/close tickets in general
         supportRoleId: "PUT_SUPPORT_ROLE_ID_HERE",
