@@ -89,7 +89,7 @@ Before opening a ticket, please check <#1502518130616963163> and the FAQ section
             emoji: "<:userquestion:1502514545791471628>",
             channelPrefix: "mgmt",
             pingRoleId: "", // falls back to ids.supportRoleId
-            categoryId: "PUT_MANAGEMENT_CATEGORY_ID_HERE",
+            categoryId: "1518326666215161986",
         },
         {
             id: "executive",
