@@ -62,7 +62,7 @@ const CONFIG = {
 
   // Dock (https://docs.docksys.xyz)
   DOCK_API_BASE: 'https://api.docksys.xyz',
-  DOCK_PID: 'y8koB7zUawW9.DixtX3.TQ9fI95oHF30D99EjbywwoEWSpSF',                       // <-- from your Dock dashboard: the PID your API key owns
+  DOCK_PID: 'PID-5BbkFDWD',                        // from your Dock dashboard
 
   ROBLOX_ACCOUNT_EMOJI: '🐧',                      // shown next to a linked Roblox username, swap for a custom emoji if you like
   SERVER_EMOJI: '🏔️',                              // shown next to the server name on the success screen
@@ -85,6 +85,17 @@ function dockHeaders() {
   return { Authorization: `Bearer ${process.env.DOCK_API_KEY}` };
 }
 
+/** Dock's error field is usually a string, but format defensively either way. */
+function formatDockError(payload) {
+  if (!payload) return 'unknown error (empty response)';
+  if (typeof payload.error === 'string') return payload.error;
+  try {
+    return JSON.stringify(payload);
+  } catch {
+    return 'unknown error';
+  }
+}
+
 /**
  * Looks up the Roblox account linked to a Discord user in this guild.
  * Returns { robloxId, robloxUsername } or null if nothing is linked.
@@ -101,7 +112,7 @@ async function getRobloxLink(discordId, guildId) {
   const payload = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new Error(`Dock lookup failed (${res.status}): ${payload?.error || 'unknown error'}`);
+    throw new Error(`Dock lookup failed (${res.status}): ${formatDockError(payload)}`);
   }
 
   const robloxId = payload?.data?.robloxId;
@@ -134,7 +145,7 @@ async function createVerificationSession(discordId, guildId) {
   const payload = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new Error(`Dock session creation failed (${res.status}): ${payload?.error || 'unknown error'}`);
+    throw new Error(`Dock session creation failed (${res.status}): ${formatDockError(payload)}`);
   }
 
   return payload?.data?.verifyUrl;
