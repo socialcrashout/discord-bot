@@ -24,9 +24,9 @@
  *     no local database); if a link now exists it grants the verified
  *     role, edits the message to the "Verification Successful"
  *     container, and logs an embed (title / description / inline
- *     field grid / banner image / "View Profile" button) to the log
- *     channel. Roblox usernames are resolved via Roblox's public
- *     users API since Dock only returns the Roblox ID.
+ *     field grid / "View Profile" button) to the log channel. Roblox
+ *     usernames are resolved via Roblox's public users API since Dock
+ *     only returns the Roblox ID.
  *
  * ENV: requires DOCK_API_KEY in your bot's environment.
  * Requires: discord.js v14.17.0+  (npm install discord.js@latest)
@@ -69,7 +69,6 @@ const CONFIG = {
 
   // Logging (embed) look
   LOG_ACCENT_COLOR: 0x5865f2,                      // left-border accent color on the log embed
-  LOG_BANNER_URL: 'https://yumi.onl/api/files/6a6a38b554d6927723c15003/raw', // gradient banner at the bottom of the log embed
 };
 
 // customIds — how the interaction handler recognizes these clicks.
@@ -173,20 +172,6 @@ function buildVerificationContainer() {
     )
   );
 
-  container.addSeparatorComponents(
-    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
-  );
-
-  container.addMediaGalleryComponents(
-    new MediaGalleryBuilder().addItems(
-      new MediaGalleryItemBuilder().setURL(CONFIG.FOOTER_URL)
-    )
-  );
-
-  container.addSeparatorComponents(
-    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
-  );
-
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(VERIFY_BUTTON_ID)
@@ -194,6 +179,12 @@ function buildVerificationContainer() {
       .setStyle(ButtonStyle.Secondary)
   );
   container.addActionRowComponents(row);
+
+  container.addMediaGalleryComponents(
+    new MediaGalleryBuilder().addItems(
+      new MediaGalleryItemBuilder().setURL(CONFIG.FOOTER_URL)
+    )
+  );
 
   return container;
 }
@@ -209,10 +200,6 @@ function buildAlreadyLinkedContainer(link, changeAccountUrl) {
       `To switch to a different Roblox account, click **Change Account** below.\n\n` +
       `To continue using your current account, click **Continue**.`
     )
-  );
-
-  container.addSeparatorComponents(
-    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
   );
 
   const row = new ActionRowBuilder().addComponents(
@@ -239,10 +226,6 @@ function buildNotLinkedContainer(linkAccountUrl) {
       `You don't have a Roblox account linked yet.\n\n` +
       `Click **Link Account** below to link one, then click **Verify** again to finish.`
     )
-  );
-
-  container.addSeparatorComponents(
-    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
   );
 
   const row = new ActionRowBuilder().addComponents(
@@ -284,7 +267,7 @@ function buildErrorContainer(message) {
 }
 
 // ---------------------------------------------------------
-// Log embed (this one DOES use an accent color / fields / image,
+// Log embed (this one DOES use an accent color / fields,
 // matching the "New Account Verification" style you want)
 // ---------------------------------------------------------
 function buildLogEmbed({ member, link }) {
@@ -299,8 +282,7 @@ function buildLogEmbed({ member, link }) {
       { name: 'Roblox ID', value: `\`${link.robloxId}\``, inline: true },
       { name: 'Discord User', value: `\`${member.id}\``, inline: true },
       { name: 'Discord User', value: `<@${member.id}>`, inline: true },
-    )
-    .setImage(CONFIG.LOG_BANNER_URL);
+    );
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -463,7 +445,7 @@ module.exports = {
  *      - CONFIG.DOCK_PID in this file — the PID your Dock API key owns
  *        (find it in your Dock dashboard where you created the API key)
  *
- * 4. Set CONFIG.LOG_BANNER_URL / CONFIG.LOG_ACCENT_COLOR / emojis to taste.
+ * 4. Set CONFIG.LOG_ACCENT_COLOR / emojis to taste.
  *
  * 5. Restart the bot once. Nothing here calls rest.put, so your other
  *    slash commands won't disappear.
