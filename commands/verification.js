@@ -67,7 +67,7 @@ const CONFIG = {
   // New Roblox-link flow
   CHANGE_ACCOUNT_URL: 'https://dock.xyz/verify',   // where "Change Account" / "Link Account" sends users
   ROBLOX_ACCOUNT_EMOJI: '🐧',                      // shown next to a linked Roblox username, swap for a custom emoji if you like
-  SERVER_EMOJI: '🏔️',                              // shown next to the server name on the success screen
+  SERVER_EMOJI: '<:mode_branding_20260510_032226_00:1506790198917206156>',                              // shown next to the server name on the success screen
 
   // Logging (embed) look
   LOG_ACCENT_COLOR: 0x5865f2,                      // left-border accent color on the log embed
