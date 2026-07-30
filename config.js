@@ -11,17 +11,18 @@ module.exports = {
      *  SERVER / CHANNEL IDS  (right-click -> Copy ID, dev mode on)
      * ------------------------------------------------------------ */
     ids: {
-        // Category (the folder) new ticket channels get created under
-        ticketsCategoryId: "1518326644400455721",
+        // Fallback parent category (folder) used only if a category below
+        // doesn't set its own categoryId
+        ticketsCategoryId: "PUT_DEFAULT_TICKETS_CATEGORY_ID_HERE",
 
         // Where finished transcripts get logged/posted
-        transcriptLogChannelId: "1502789305721032704",
+        transcriptLogChannelId: "PUT_TRANSCRIPT_LOG_CHANNEL_ID_HERE",
 
         // Roles that can see/claim/close tickets in general
-        supportRoleId: "1504316405942718644",
+        supportRoleId: "PUT_SUPPORT_ROLE_ID_HERE",
 
         // Role pinged when a ticket is escalated
-        managementRoleId: "1504313264576925757",
+        managementRoleId: "PUT_MANAGEMENT_ROLE_ID_HERE",
     },
 
     /* ------------------------------------------------------------
@@ -67,6 +68,9 @@ Before opening a ticket, please check <#1502518130616963163> and the FAQ section
      *  emoji supports unicode ("🌐") or custom format "<:name:id>"
      *  pingRoleId = role pinged/added to the ticket when this
      *  category is chosen. Leave "" to use supportRoleId instead.
+     *  categoryId = the Discord channel category (folder) this
+     *  ticket type's channels get created under. Leave "" to fall
+     *  back to ids.ticketsCategoryId.
      * ------------------------------------------------------------ */
     categories: [
         {
@@ -76,6 +80,7 @@ Before opening a ticket, please check <#1502518130616963163> and the FAQ section
             emoji: "<:Globe:1502513708398547035>",
             channelPrefix: "general",
             pingRoleId: "", // falls back to ids.supportRoleId
+            categoryId: "PUT_GENERAL_CATEGORY_ID_HERE",
         },
         {
             id: "management",
@@ -84,6 +89,7 @@ Before opening a ticket, please check <#1502518130616963163> and the FAQ section
             emoji: "<:userquestion:1502514545791471628>",
             channelPrefix: "mgmt",
             pingRoleId: "", // falls back to ids.supportRoleId
+            categoryId: "PUT_MANAGEMENT_CATEGORY_ID_HERE",
         },
         {
             id: "executive",
@@ -92,6 +98,7 @@ Before opening a ticket, please check <#1502518130616963163> and the FAQ section
             emoji: "<:person:1502514200705105981>",
             channelPrefix: "exec",
             pingRoleId: "", // e.g. put a dedicated exec role id here
+            categoryId: "PUT_EXECUTIVE_CATEGORY_ID_HERE",
         },
     ],
 
@@ -136,7 +143,7 @@ Escalated by {staff}.`,
         // "delete" removes the channel after closing (transcript still saved)
         // "archive" moves it to archiveCategoryId and locks it instead
         onClose: "delete",
-        archiveCategoryId: "1518326644400455721",
+        archiveCategoryId: "PUT_ARCHIVE_CATEGORY_ID_HERE",
 
         // seconds to wait after "Close" is confirmed before deleting the channel
         closeDelaySeconds: 5,
