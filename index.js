@@ -3,7 +3,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Collection, REST, Routes, Events  } = require('discord.js')
 const fs = require('fs')
 const path = require('path')
-const ticketManager = require('./lib/ticketManager')
+const ticketManager = require('./utils/ticketManager')
 
 const { DISCORD_TOKEN, CLIENT_ID, GUILD_ID, PREFIX } = process.env;
 
