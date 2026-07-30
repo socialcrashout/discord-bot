@@ -98,7 +98,7 @@ Before opening a ticket, please check <#1502518130616963163> and the FAQ section
             emoji: "<:person:1502514200705105981>",
             channelPrefix: "exec",
             pingRoleId: "", // e.g. put a dedicated exec role id here
-            categoryId: "PUT_EXECUTIVE_CATEGORY_ID_HERE",
+            categoryId: "1518336512347869315",
         },
     ],
 
