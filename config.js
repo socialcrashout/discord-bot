@@ -19,7 +19,7 @@ module.exports = {
         transcriptLogChannelId: "PUT_TRANSCRIPT_LOG_CHANNEL_ID_HERE",
 
         // Roles that can see/claim/close tickets in general
-        supportRoleId: "PUT_SUPPORT_ROLE_ID_HERE",
+        supportRoleId: "1504316405942718644",
 
         // Role pinged when a ticket is escalated
         managementRoleId: "1504313264576925757",
