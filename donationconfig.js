@@ -34,7 +34,7 @@ module.exports = {
     },
 
     usd: {
-        kofiUrl: "https://ko-fi.com/yourname",
+        kofiUrl: "https://ko-fi.com/mode",
         cashappUrl: "https://cash.app/$ownthedream",
     },
 
