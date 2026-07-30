@@ -21,7 +21,7 @@ module.exports = {
         supportRoleId: "1504316405942718644",
 
         // Role pinged when a ticket is escalated
-        managementRoleId: "PUT_MANAGEMENT_ROLE_ID_HERE",
+        managementRoleId: "1504313264576925757",
     },
 
     /* ------------------------------------------------------------
