@@ -65,7 +65,7 @@ const CONFIG = {
   DOCK_PID: 'PID-5BbkFDWD',                        // from your Dock dashboard
 
   ROBLOX_ACCOUNT_EMOJI: '<:Roblox:1532200384968265828>',                      // shown next to a linked Roblox username, swap for a custom emoji if you like
-  SERVER_EMOJI: '🏔️',                              // shown next to the server name on the success screen
+  SERVER_EMOJI: '<:mode_branding_20260510_032226_00:1506790198917206156>',                              // shown next to the server name on the success screen
 
   // Logging (embed) look
   LOG_ACCENT_COLOR: 0x5865f2,                      // left-border accent color on the log embed
