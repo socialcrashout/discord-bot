@@ -136,7 +136,7 @@ Escalated by {staff}.`,
         // "delete" removes the channel after closing (transcript still saved)
         // "archive" moves it to archiveCategoryId and locks it instead
         onClose: "delete",
-        archiveCategoryId: "PUT_ARCHIVE_CATEGORY_ID_HERE",
+        archiveCategoryId: "1518326644400455721",
 
         // seconds to wait after "Close" is confirmed before deleting the channel
         closeDelaySeconds: 5,
