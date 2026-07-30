@@ -110,7 +110,7 @@ Before opening a ticket, please check <#1502518130616963163> and the FAQ section
         bannerUrl: "https://yumi.onl/api/files/6a6aac82de0a418aa0f4e194/raw",
 
         text:
-`**<:supportnew:1385476378266177607> ASSISTANCE**
+`**<:userquestion:1502514545791471628> ASSISTANCE**
 
 Hey there, {user}! Thanks for contacting us. We're happy to help with whatever you need, but we do ask that you follow a few guidelines:
 
