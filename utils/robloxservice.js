@@ -35,6 +35,9 @@ async function sendAuthenticatedPatch(url, body) {
         "Content-Type": "application/json",
     };
 
+    console.log(`[roblox] PATCH ${url}`);
+    console.log(`[roblox] body: ${JSON.stringify(body)}`);
+
     // Roblox rejects the first write request and hands back the CSRF
     // token it wants in the retry — this is the standard dance.
     const probe = await fetch(url, {
@@ -50,6 +53,8 @@ async function sendAuthenticatedPatch(url, body) {
         // challenge — treat that as success instead of erroring out.
         if (probe.ok) return probe.json().catch(() => ({}));
         const text = await probe.text().catch(() => "");
+        console.error(`[roblox] probe failed - status ${probe.status}, content-type: ${probe.headers.get("content-type")}`);
+        console.error(`[roblox] probe response body: ${text}`);
         throw new Error(`Roblox API error (${probe.status}): ${text}`);
     }
 
@@ -61,6 +66,8 @@ async function sendAuthenticatedPatch(url, body) {
 
     if (!response.ok) {
         const text = await response.text().catch(() => "");
+        console.error(`[roblox] request failed - status ${response.status}, content-type: ${response.headers.get("content-type")}`);
+        console.error(`[roblox] response body: ${text}`);
         throw new Error(`Roblox API error (${response.status}): ${text}`);
     }
 
