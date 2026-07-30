@@ -170,11 +170,10 @@ client.on(Events.InteractionCreate, async interaction => {
             return;
         }
 
-        // Donate command: method / robux type / robux price / usd method selects
+        // Donate command: method / robux type / usd method selects
         if (
             interaction.customId === donationManager.SELECT_METHOD ||
             interaction.customId === donationManager.SELECT_ROBUX_TYPE ||
-            interaction.customId.startsWith(donationManager.SELECT_ROBUX_PRICE_PREFIX) ||
             interaction.customId === donationManager.SELECT_USD_METHOD
         ) {
             try {
@@ -246,9 +245,12 @@ client.on(Events.InteractionCreate, async interaction => {
         return;
     }
 
-    // Modals (currently just the donate command's USD amount confirmation)
+    // Modals (the donate command's Robux and USD amount inputs)
     if (interaction.isModalSubmit()) {
-        if (interaction.customId.startsWith(donationManager.MODAL_USD_AMOUNT_PREFIX)) {
+        if (
+            interaction.customId.startsWith(donationManager.MODAL_ROBUX_AMOUNT_PREFIX) ||
+            interaction.customId.startsWith(donationManager.MODAL_USD_AMOUNT_PREFIX)
+        ) {
             try {
                 await donationManager.handleModalSubmit(interaction, client);
             } catch (err) {
