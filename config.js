@@ -38,7 +38,7 @@ module.exports = {
         // Main body text. Discord markdown + custom emoji work fine here.
         // Edit this freely - it's just a template string.
         text:
-`**<:supportnew:1385476378266177607> .Mode Assistance Center**
+`**<:userquestion:1502514545791471628> .Mode Assistance Center**
 Welcome to .mode support! We're here to help with anything you need inside the server. Please select the correct category below so we can assist you as quickly and efficiently as possible:
 
 **<:Globe:1502513708398547035> General Support**
