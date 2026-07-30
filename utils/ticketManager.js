@@ -221,9 +221,14 @@ async function handleCategorySelect(interaction) {
         role: pingRoleId ? `<@&${pingRoleId}>` : "",
     }).trim();
 
+    // Components V2 messages can't use the `content` field, so pings go in
+    // as their own top-level TextDisplay component instead.
+    const messageComponents = [];
+    if (pingText) messageComponents.push(new TextDisplayBuilder().setContent(pingText));
+    messageComponents.push(container);
+
     await channel.send({
-        content: pingText || undefined,
-        components: [container],
+        components: messageComponents,
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { users: [interaction.user.id], roles: pingRoleId ? [pingRoleId] : [] },
     });
@@ -259,12 +264,20 @@ async function handleButton(interaction) {
         }
 
         case BTN_CLOSE_CANCEL: {
-            await interaction.update({ content: "Cancelled.", components: [] });
+            // This message was originally sent with IsComponentsV2, so the edit
+            // has to stay V2 too - no `content`, just a TextDisplay component.
+            await interaction.update({
+                components: [new TextDisplayBuilder().setContent("Cancelled.")],
+                flags: MessageFlags.IsComponentsV2,
+            });
             break;
         }
 
         case BTN_CLOSE_CONFIRM: {
-            await interaction.update({ content: "Closing ticket & generating transcript...", components: [] });
+            await interaction.update({
+                components: [new TextDisplayBuilder().setContent("Closing ticket & generating transcript...")],
+                flags: MessageFlags.IsComponentsV2,
+            });
             await closeTicket(channel, interaction.user);
             break;
         }
@@ -277,9 +290,13 @@ async function handleButton(interaction) {
             const opener = openerId ? await interaction.guild.members.fetch(openerId).catch(() => null) : null;
 
             const { container, pingText } = buildEscalateContainer(opener?.user || "the ticket opener", interaction.user);
+
+            const escalateComponents = [];
+            if (pingText) escalateComponents.push(new TextDisplayBuilder().setContent(pingText));
+            escalateComponents.push(container);
+
             await channel.send({
-                content: pingText || undefined,
-                components: [container],
+                components: escalateComponents,
                 flags: MessageFlags.IsComponentsV2,
                 allowedMentions: { roles: config.ids.managementRoleId ? [config.ids.managementRoleId] : [] },
             });
