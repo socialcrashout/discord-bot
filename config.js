@@ -12,7 +12,7 @@ module.exports = {
      * ------------------------------------------------------------ */
     ids: {
         // Category (the folder) new ticket channels get created under
-        ticketsCategoryId: "PUT_TICKETS_CATEGORY_ID_HERE",
+        ticketsCategoryId: "1518326644400455721",
 
         // Where finished transcripts get logged/posted
         transcriptLogChannelId: "PUT_TRANSCRIPT_LOG_CHANNEL_ID_HERE",
