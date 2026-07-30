@@ -17,7 +17,7 @@ module.exports = {
 
         // The universe (game) ID that owns the donation game pass.
         // Find it via the Creator Dashboard URL for your experience.
-        universeId: "PUT_UNIVERSE_ID_HERE",
+        universeId: "10151034895",
 
         // Asset used for accounts 16+ (game passes can be any price).
         gamepassId: "PUT_GAMEPASS_ID_HERE",
