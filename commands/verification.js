@@ -9,34 +9,30 @@
  * every file in commands/, and doing it again here is what wiped
  * your other slash commands last time.
  *
- * FLOW:
+ * FLOW (backed live by the Dock API — https://docs.docksys.xyz):
  *  1. User clicks "Verify" on the message posted by /setup-verification.
- *  2. Bot looks up the user's linked Roblox account in a local JSON
- *     store (data/roblox-links.json).
- *       - If linked: shows a Container-based message ("You already
- *         have the Roblox account X linked...") with two buttons:
- *         "Change Account" (Link-style button -> your dock.xyz URL,
- *         handled entirely by Discord client-side, no bot code
- *         needed) and "Continue" (bot-handled button).
- *       - If NOT linked: shows a Container-based message telling
- *         them to link one, with just a "Link Account" Link button.
- *  3. Clicking "Continue" re-checks the store; if a link exists it
- *     grants the verified role, edits the message to the
- *     "Verification Successful" container, and logs an embed
- *     (title / description / inline field grid / banner image /
- *     "View Profile" button) to the log channel.
+ *  2. Bot calls Dock's discord-to-roblox lookup for that user + this
+ *     guild, AND creates a fresh Dock verification session (used for
+ *     the Change/Link Account button URL either way).
+ *       - Linked: shows a Container-based message ("You already have
+ *         the Roblox account X linked...") with "Change Account"
+ *         (Link-style button -> the Dock verifyUrl, handled entirely
+ *         client-side, no bot code needed) and "Continue" (bot-handled).
+ *       - Not linked: shows a Container telling them to link one, with
+ *         just a "Link Account" Link button (same Dock verifyUrl).
+ *  3. Clicking "Continue" re-queries Dock (the live source of truth —
+ *     no local database); if a link now exists it grants the verified
+ *     role, edits the message to the "Verification Successful"
+ *     container, and logs an embed (title / description / inline
+ *     field grid / banner image / "View Profile" button) to the log
+ *     channel. Roblox usernames are resolved via Roblox's public
+ *     users API since Dock only returns the Roblox ID.
  *
- * NOTE ON DATA: data/roblox-links.json is a simple flat file for now.
- * You (or whatever links Roblox accounts) are responsible for writing
- * entries into it — see setRobloxLink() below for the shape. Swap
- * readStore/writeStore for real DB calls later without touching the
- * rest of the file.
- *
+ * ENV: requires DOCK_API_KEY in your bot's environment.
  * Requires: discord.js v14.17.0+  (npm install discord.js@latest)
+ * Requires: Node 18+ (global fetch)
  */
 
-const fs = require('node:fs');
-const path = require('node:path');
 const {
   SlashCommandBuilder,
   PermissionFlagsBits,
@@ -64,17 +60,16 @@ const CONFIG = {
   FOOTER_URL: 'https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw',
   DOT_EMOJI: '<:Dot:1502513706347528213>',
 
-  // New Roblox-link flow
-  CHANGE_ACCOUNT_URL: 'https://dock.xyz/verify',   // where "Change Account" / "Link Account" sends users
+  // Dock (https://docs.docksys.xyz)
+  DOCK_API_BASE: 'https://api.docksys.xyz',
+  DOCK_PID: 'YOUR_DOCK_PID',                       // <-- from your Dock dashboard: the PID your API key owns
+
   ROBLOX_ACCOUNT_EMOJI: '🐧',                      // shown next to a linked Roblox username, swap for a custom emoji if you like
-  SERVER_EMOJI: '<:mode_branding_20260510_032226_00:1506790198917206156>',                              // shown next to the server name on the success screen
+  SERVER_EMOJI: '🏔️',                              // shown next to the server name on the success screen
 
   // Logging (embed) look
   LOG_ACCENT_COLOR: 0x5865f2,                      // left-border accent color on the log embed
   LOG_BANNER_URL: 'https://yumi.onl/api/files/6a6a38b554d6927723c15003/raw', // gradient banner at the bottom of the log embed
-
-  // JSON store of discordId -> { robloxUsername, robloxId, verifiedAt }
-  ROBLOX_LINKS_FILE: path.join(__dirname, '..', 'data', 'roblox-links.json'),
 };
 
 // customIds — how the interaction handler recognizes these clicks.
@@ -84,45 +79,65 @@ const VERIFY_BUTTON_ID = 'mode_verify';
 const CONTINUE_BUTTON_ID = 'mode_verify_continue';
 
 // ---------------------------------------------------------
-// Tiny JSON store helpers — swap these for real DB calls later
+// Dock API helpers
 // ---------------------------------------------------------
-function ensureStore() {
-  const dir = path.dirname(CONFIG.ROBLOX_LINKS_FILE);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  if (!fs.existsSync(CONFIG.ROBLOX_LINKS_FILE)) {
-    fs.writeFileSync(CONFIG.ROBLOX_LINKS_FILE, JSON.stringify({}, null, 2));
-  }
+function dockHeaders() {
+  return { Authorization: `Bearer ${process.env.DOCK_API_KEY}` };
 }
 
-function readStore() {
-  ensureStore();
+/**
+ * Looks up the Roblox account linked to a Discord user in this guild.
+ * Returns { robloxId, robloxUsername } or null if nothing is linked.
+ * Throws on anything that isn't a clean "linked" / "not linked" result
+ * (401/403/429/500), so callers can show a real error instead of
+ * silently treating an outage as "not linked".
+ */
+async function getRobloxLink(discordId, guildId) {
+  const url = `${CONFIG.DOCK_API_BASE}/api/v1/public/discord-to-roblox?discordId=${discordId}&guildId=${guildId}`;
+  const res = await fetch(url, { headers: dockHeaders() });
+
+  if (res.status === 404) return null;
+
+  const payload = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(`Dock lookup failed (${res.status}): ${payload?.error || 'unknown error'}`);
+  }
+
+  const robloxId = payload?.data?.robloxId;
+  if (!robloxId) return null;
+
+  const robloxUsername = await getRobloxUsername(robloxId);
+  return { robloxId, robloxUsername };
+}
+
+/** Dock only returns a Roblox ID, so resolve the username via Roblox's public API. */
+async function getRobloxUsername(robloxId) {
   try {
-    return JSON.parse(fs.readFileSync(CONFIG.ROBLOX_LINKS_FILE, 'utf8'));
+    const res = await fetch(`https://users.roblox.com/v1/users/${robloxId}`);
+    if (!res.ok) return robloxId; // fall back to showing the raw ID
+    const data = await res.json();
+    return data.name || robloxId;
   } catch {
-    return {};
+    return robloxId;
   }
 }
 
-function writeStore(data) {
-  ensureStore();
-  fs.writeFileSync(CONFIG.ROBLOX_LINKS_FILE, JSON.stringify(data, null, 2));
-}
+/** Creates (or reuses) a Dock verification session and returns its verifyUrl. */
+async function createVerificationSession(discordId, guildId) {
+  const res = await fetch(`${CONFIG.DOCK_API_BASE}/api/v1/verify/session`, {
+    method: 'POST',
+    headers: { ...dockHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pid: CONFIG.DOCK_PID, clientId: discordId, guildId }),
+  });
 
-/** Returns { robloxUsername, robloxId, verifiedAt } or null */
-function getRobloxLink(discordId) {
-  const store = readStore();
-  return store[discordId] || null;
-}
+  const payload = await res.json().catch(() => null);
 
-/** Call this from wherever your Roblox-linking flow finishes. */
-function setRobloxLink(discordId, { robloxUsername, robloxId }) {
-  const store = readStore();
-  store[discordId] = {
-    robloxUsername,
-    robloxId,
-    verifiedAt: store[discordId]?.verifiedAt ?? null, // set on Continue, not on link
-  };
-  writeStore(store);
+  if (!res.ok) {
+    throw new Error(`Dock session creation failed (${res.status}): ${payload?.error || 'unknown error'}`);
+  }
+
+  return payload?.data?.verifyUrl;
 }
 
 // ---------------------------------------------------------
@@ -173,7 +188,7 @@ function buildVerificationContainer() {
 }
 
 /** "You already have the Roblox account X linked..." screen */
-function buildAlreadyLinkedContainer(link) {
+function buildAlreadyLinkedContainer(link, changeAccountUrl) {
   const container = new ContainerBuilder();
 
   container.addTextDisplayComponents(
@@ -193,7 +208,7 @@ function buildAlreadyLinkedContainer(link) {
     new ButtonBuilder()
       .setLabel('Change Account')
       .setStyle(ButtonStyle.Link)
-      .setURL(CONFIG.CHANGE_ACCOUNT_URL),
+      .setURL(changeAccountUrl),
     new ButtonBuilder()
       .setCustomId(CONTINUE_BUTTON_ID)
       .setLabel('Continue')
@@ -205,7 +220,7 @@ function buildAlreadyLinkedContainer(link) {
 }
 
 /** Screen shown when the user has no Roblox account linked yet */
-function buildNotLinkedContainer() {
+function buildNotLinkedContainer(linkAccountUrl) {
   const container = new ContainerBuilder();
 
   container.addTextDisplayComponents(
@@ -223,7 +238,7 @@ function buildNotLinkedContainer() {
     new ButtonBuilder()
       .setLabel('Link Account')
       .setStyle(ButtonStyle.Link)
-      .setURL(CONFIG.CHANGE_ACCOUNT_URL)
+      .setURL(linkAccountUrl)
   );
   container.addActionRowComponents(row);
 
@@ -243,6 +258,17 @@ function buildSuccessContainer(link, guildName) {
     )
   );
 
+  return container;
+}
+
+/** Generic error screen (Dock outage, rate limit, etc) */
+function buildErrorContainer(message) {
+  const container = new ContainerBuilder();
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      `⚠️ ${message}\n\nPlease try again in a moment, or open a ticket in <#${CONFIG.TICKET_CHANNEL_ID}> if this keeps happening.`
+    )
+  );
   return container;
 }
 
@@ -290,17 +316,30 @@ function buildFailureLogEmbed({ member, reason }) {
 // InteractionCreate handler (see wiring notes at the bottom)
 // ---------------------------------------------------------
 async function handleVerifyButton(interaction) {
-  const link = getRobloxLink(interaction.user.id);
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-  if (link) {
-    await interaction.reply({
-      components: [buildAlreadyLinkedContainer(link)],
-      flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
-    });
-  } else {
-    await interaction.reply({
-      components: [buildNotLinkedContainer()],
-      flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+  try {
+    const [link, verifyUrl] = await Promise.all([
+      getRobloxLink(interaction.user.id, interaction.guildId),
+      createVerificationSession(interaction.user.id, interaction.guildId),
+    ]);
+
+    if (link) {
+      await interaction.editReply({
+        components: [buildAlreadyLinkedContainer(link, verifyUrl)],
+        flags: MessageFlags.IsComponentsV2,
+      });
+    } else {
+      await interaction.editReply({
+        components: [buildNotLinkedContainer(verifyUrl)],
+        flags: MessageFlags.IsComponentsV2,
+      });
+    }
+  } catch (err) {
+    console.error('Dock lookup/session error:', err);
+    await interaction.editReply({
+      components: [buildErrorContainer('Something went wrong checking your Roblox verification.')],
+      flags: MessageFlags.IsComponentsV2,
     });
   }
 }
@@ -310,21 +349,18 @@ async function handleContinueButton(interaction) {
   await interaction.deferUpdate();
 
   const member = interaction.member;
-  const link = getRobloxLink(interaction.user.id);
-
-  if (!link) {
-    await interaction.editReply({
-      components: [buildNotLinkedContainer()],
-      flags: MessageFlags.IsComponentsV2,
-    });
-    return;
-  }
 
   try {
-    // stamp verifiedAt now and persist
-    const store = readStore();
-    store[interaction.user.id] = { ...link, verifiedAt: Date.now() };
-    writeStore(store);
+    const link = await getRobloxLink(interaction.user.id, interaction.guildId);
+
+    if (!link) {
+      const linkAccountUrl = await createVerificationSession(interaction.user.id, interaction.guildId);
+      await interaction.editReply({
+        components: [buildNotLinkedContainer(linkAccountUrl)],
+        flags: MessageFlags.IsComponentsV2,
+      });
+      return;
+    }
 
     if (!member.roles.cache.has(CONFIG.VERIFIED_ROLE_ID)) {
       await member.roles.add(CONFIG.VERIFIED_ROLE_ID);
@@ -341,9 +377,8 @@ async function handleContinueButton(interaction) {
     console.error('Verification error:', err);
 
     await interaction.editReply({
-      content: 'Something went wrong while verifying you. Please open a ticket for help.',
-      components: [],
-      flags: MessageFlags.Ephemeral,
+      components: [buildErrorContainer('Something went wrong while verifying you.')],
+      flags: MessageFlags.IsComponentsV2,
     });
 
     try {
@@ -379,10 +414,9 @@ module.exports = {
   handleVerifyButton,
   handleContinueButton,
 
-  // exported so whatever finishes your Roblox-linking flow can write
-  // to the store (call setRobloxLink(discordId, { robloxUsername, robloxId }))
+  // exported in case you want to call Dock directly elsewhere
   getRobloxLink,
-  setRobloxLink,
+  createVerificationSession,
 };
 
 /**
@@ -409,22 +443,16 @@ module.exports = {
  *      }
  *
  *    Note: "Change Account" / "Link Account" are Link-style buttons
- *    (a raw URL), so Discord opens them client-side and never sends
- *    an interaction to your bot — nothing to wire for those.
+ *    (a real Dock verifyUrl, freshly generated per click), so Discord
+ *    opens them client-side and never sends an interaction to your
+ *    bot — nothing to wire for those.
  *
- * 3. Fill in data/roblox-links.json manually for now, shaped like:
- *      {
- *        "144256906984790858": {
- *          "robloxUsername": "Jek12345003",
- *          "robloxId": "7186967351",
- *          "verifiedAt": null
- *        }
- *      }
- *    Or call verification.setRobloxLink(discordId, { robloxUsername, robloxId })
- *    from wherever your real linking flow lands, once you build it.
+ * 3. Set these in your bot's environment / config:
+ *      - DOCK_API_KEY  (env var — used exactly like your original snippet)
+ *      - CONFIG.DOCK_PID in this file — the PID your Dock API key owns
+ *        (find it in your Dock dashboard where you created the API key)
  *
- * 4. Set CONFIG.CHANGE_ACCOUNT_URL to your real dock.xyz link, and
- *    CONFIG.LOG_BANNER_URL / CONFIG.LOG_ACCENT_COLOR / emojis to taste.
+ * 4. Set CONFIG.LOG_BANNER_URL / CONFIG.LOG_ACCENT_COLOR / emojis to taste.
  *
  * 5. Restart the bot once. Nothing here calls rest.put, so your other
  *    slash commands won't disappear.
