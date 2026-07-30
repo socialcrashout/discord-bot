@@ -19,10 +19,10 @@ const roblox = require("./robloxService");
 // against these.
 const SELECT_METHOD = "donate_method_select";
 const SELECT_ROBUX_TYPE = "donate_robux_type_select";
-const SELECT_ROBUX_PRICE_PREFIX = "donate_robux_price_select"; // + ":type"
 const SELECT_USD_METHOD = "donate_usd_method_select";
 const BTN_ROBUX_PAID_PREFIX = "donate_robux_paid"; // + ":type:price"
 const BTN_USD_PAID_PREFIX = "donate_usd_paid"; // + ":method"
+const MODAL_ROBUX_AMOUNT_PREFIX = "donate_robux_amount_modal"; // + ":type"
 const MODAL_USD_AMOUNT_PREFIX = "donate_usd_amount_modal"; // + ":method"
 
 const ROBUX_TYPE_LABELS = {
@@ -108,38 +108,45 @@ async function showUsdMethodSelect(interaction) {
     );
 }
 
-// ---------- STEP: robux type chosen -> show price select ----------
+// ---------- STEP: robux type chosen -> ask for a custom amount via modal ----------
 
-async function showRobuxPriceSelect(interaction, type) {
-    const options = config.roblox.priceOptions.map((amount) => ({
-        label: `${amount} Robux`,
-        value: String(amount),
-    }));
+async function showRobuxAmountModal(interaction, type) {
+    const modal = new ModalBuilder()
+        .setCustomId(`${MODAL_ROBUX_AMOUNT_PREFIX}:${type}`)
+        .setTitle("How much Robux?");
 
-    const row = new ActionRowBuilder().addComponents(
-        new StringSelectMenuBuilder()
-            .setCustomId(`${SELECT_ROBUX_PRICE_PREFIX}:${type}`)
-            .setPlaceholder("Choose an amount")
-            .addOptions(options)
-    );
+    const amountInput = new TextInputBuilder()
+        .setCustomId("amount")
+        .setLabel("Enter the amount of Robux to donate")
+        .setPlaceholder("e.g. 250")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
-    await interaction.update(
-        payload(
-            container(
-                {
-                    type: "text",
-                    content: `# 🎮 Robux Donation\n**Option:** ${ROBUX_TYPE_LABELS[type]}\n\nChoose how much you'd like to donate.`,
-                },
-                { type: "separator" },
-                { type: "row", row }
-            )
-        )
-    );
+    modal.addComponents(new ActionRowBuilder().addComponents(amountInput));
+
+    await interaction.showModal(modal);
 }
 
-// ---------- STEP: robux price chosen -> update price, show buy link ----------
+// ---------- STEP: robux amount modal submitted -> update price, show buy link ----------
 
-async function handleRobuxPriceChosen(interaction, type, price) {
+async function handleRobuxAmountSubmit(interaction, type, client) {
+    const raw = interaction.fields.getTextInputValue("amount").trim();
+    const price = Math.floor(Number(raw.replace(/[^0-9]/g, "")));
+
+    const { minPrice = 1, maxPrice } = config.roblox;
+
+    if (!price || price < minPrice || (maxPrice && price > maxPrice)) {
+        await interaction.reply({
+            content: `Please enter a whole number${
+                maxPrice ? ` between ${minPrice} and ${maxPrice}` : ` of at least ${minPrice}`
+            } Robux.`,
+            flags: MessageFlags.Ephemeral,
+        });
+        return;
+    }
+
+    // The modal was opened from the type-select message, so this edits
+    // that same ephemeral message in place.
     await interaction.deferUpdate();
 
     try {
@@ -314,12 +321,7 @@ async function handleSelectMenu(interaction, client) {
     }
 
     if (customId === SELECT_ROBUX_TYPE) {
-        return showRobuxPriceSelect(interaction, value);
-    }
-
-    if (customId.startsWith(SELECT_ROBUX_PRICE_PREFIX)) {
-        const [, type] = customId.split(":");
-        return handleRobuxPriceChosen(interaction, type, Number(value));
+        return showRobuxAmountModal(interaction, value);
     }
 
     if (customId === SELECT_USD_METHOD) {
@@ -344,6 +346,11 @@ async function handleButton(interaction, client) {
 async function handleModalSubmit(interaction, client) {
     const { customId } = interaction;
 
+    if (customId.startsWith(MODAL_ROBUX_AMOUNT_PREFIX)) {
+        const [, type] = customId.split(":");
+        return handleRobuxAmountSubmit(interaction, type, client);
+    }
+
     if (customId.startsWith(MODAL_USD_AMOUNT_PREFIX)) {
         const [, method] = customId.split(":");
         return handleUsdAmountSubmit(interaction, method, client);
@@ -353,10 +360,10 @@ async function handleModalSubmit(interaction, client) {
 module.exports = {
     SELECT_METHOD,
     SELECT_ROBUX_TYPE,
-    SELECT_ROBUX_PRICE_PREFIX,
     SELECT_USD_METHOD,
     BTN_ROBUX_PAID_PREFIX,
     BTN_USD_PAID_PREFIX,
+    MODAL_ROBUX_AMOUNT_PREFIX,
     MODAL_USD_AMOUNT_PREFIX,
     handleSelectMenu,
     handleButton,
