@@ -7,7 +7,7 @@
 module.exports = {
     // Channel the "someone just donated!" message gets posted in.
     // Used for BOTH Robux and USD donations.
-    appreciationChannelId: "PUT_CHANNEL_ID_HERE",
+    appreciationChannelId: "1502517147673563266",
 
     roblox: {
         // The .ROBLOSECURITY cookie for the account that owns the game pass
