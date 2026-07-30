@@ -157,9 +157,9 @@ client.on(Events.MessageCreate, async message => {
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-    // Buttons (e.g. the .mode verification "Verify" button) are handled
-    // here, separately from slash commands, since isChatInputCommand()
-    // would otherwise skip them entirely.
+    // Buttons (e.g. the .mode verification "Verify"/"Continue" buttons) are
+    // handled here, separately from slash commands, since
+    // isChatInputCommand() would otherwise skip them entirely.
     if (interaction.isButton()) {
         const verification = client.slashCommands.get("setup-verification");
 
@@ -169,7 +169,18 @@ client.on(Events.InteractionCreate, async interaction => {
             } catch (err) {
                 console.error("Error handling verify button:", err);
             }
+            return;
         }
+
+        if (verification && interaction.customId === verification.CONTINUE_BUTTON_ID) {
+            try {
+                await verification.handleContinueButton(interaction);
+            } catch (err) {
+                console.error("Error handling continue button:", err);
+            }
+            return;
+        }
+
         return;
     }
 
