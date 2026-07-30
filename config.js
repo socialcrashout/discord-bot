@@ -1,0 +1,144 @@
+/**
+ * ============================================================
+ *  TICKET SYSTEM CONFIG
+ *  Edit everything in this file. Nothing else needs to change
+ *  unless you want to touch the actual logic.
+ * ============================================================
+ */
+
+module.exports = {
+    /* ------------------------------------------------------------
+     *  SERVER / CHANNEL IDS  (right-click -> Copy ID, dev mode on)
+     * ------------------------------------------------------------ */
+    ids: {
+        // Category (the folder) new ticket channels get created under
+        ticketsCategoryId: "PUT_TICKETS_CATEGORY_ID_HERE",
+
+        // Where finished transcripts get logged/posted
+        transcriptLogChannelId: "PUT_TRANSCRIPT_LOG_CHANNEL_ID_HERE",
+
+        // Roles that can see/claim/close tickets in general
+        supportRoleId: "PUT_SUPPORT_ROLE_ID_HERE",
+
+        // Role pinged when a ticket is escalated
+        managementRoleId: "PUT_MANAGEMENT_ROLE_ID_HERE",
+    },
+
+    /* ------------------------------------------------------------
+     *  PANEL (the message -panel sends)
+     * ------------------------------------------------------------ */
+    panel: {
+        // Big image at the top of the panel
+        bannerUrl: "https://yumi.onl/api/files/6a6aac82de0a418aa0f4e194/raw",
+
+        // Small image used as the "footer" strip at the bottom
+        footerUrl: "https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw",
+
+        // Main body text. Discord markdown + custom emoji work fine here.
+        // Edit this freely - it's just a template string.
+        text:
+`**<:supportnew:1385476378266177607> .Mode Assistance Center**
+Welcome to .mode support! We're here to help with anything you need inside the server. Please select the correct category below so we can assist you as quickly and efficiently as possible:
+
+**<:Globe:1502513708398547035> General Support**
+<:Dot:1502513706347528213>Questions & Inquiries
+<:Dot:1502513706347528213>Giveaway Rewards
+<:Dot:1502513706347528213>Customer Support
+
+**<:userquestion:1502514545791471628> Management Support**
+<:Dot:1502513706347528213>Report a Staff Member
+<:Dot:1502513706347528213>Report a User
+<:Dot:1502513706347528213>Partnership Requests
+
+**<:person:1502514200705105981> Executive Support**
+<:Dot:1502513706347528213>Refund Requests
+<:Dot:1502513706347528213>Important Issues
+<:Dot:1502513706347528213>Appeals & Moderation Cases
+
+**<:Save:1502514208019972217> Reminder**
+Before opening a ticket, please check <#1502518130616963163> and the FAQ section to make sure your issue hasn't already been answered.`,
+
+        // Text shown next to the select menu before anything is picked
+        selectPlaceholder: "Select a category to open a ticket",
+    },
+
+    /* ------------------------------------------------------------
+     *  CATEGORIES  (the options in the select menu)
+     *  emoji supports unicode ("🌐") or custom format "<:name:id>"
+     *  pingRoleId = role pinged/added to the ticket when this
+     *  category is chosen. Leave "" to use supportRoleId instead.
+     * ------------------------------------------------------------ */
+    categories: [
+        {
+            id: "general",
+            label: "General Support",
+            description: "Questions, giveaway rewards, customer support",
+            emoji: "<:Globe:1502513708398547035>",
+            channelPrefix: "general",
+            pingRoleId: "", // falls back to ids.supportRoleId
+        },
+        {
+            id: "management",
+            label: "Management Support",
+            description: "Report a staff member/user, partnership requests",
+            emoji: "<:userquestion:1502514545791471628>",
+            channelPrefix: "mgmt",
+            pingRoleId: "", // falls back to ids.supportRoleId
+        },
+        {
+            id: "executive",
+            label: "Executive Support",
+            description: "Refunds, important issues, appeals & moderation cases",
+            emoji: "<:person:1502514200705105981>",
+            channelPrefix: "exec",
+            pingRoleId: "", // e.g. put a dedicated exec role id here
+        },
+    ],
+
+    /* ------------------------------------------------------------
+     *  TICKET CHANNEL MESSAGE (sent inside the new ticket channel)
+     *  Placeholders: {user} {category} {guidelines}
+     * ------------------------------------------------------------ */
+    ticket: {
+        bannerUrl: "https://yumi.onl/api/files/6a6aac82de0a418aa0f4e194/raw",
+
+        text:
+`**<:supportnew:1385476378266177607> ASSISTANCE**
+
+Hey there, {user}! Thanks for contacting us. We're happy to help with whatever you need, but we do ask that you follow a few guidelines:
+
+• Do not mention anyone to ask them to answer your ticket, somebody will help you as soon as possible.
+• Be respectful. Our team is happy to help, but if you are blatantly disrespectful, your ticket will be closed.
+
+**Inquiry**: "{category}"`,
+
+        // Message content sent alongside the ticket embed (pings)
+        pingText: "{user} {role}",
+    },
+
+    /* ------------------------------------------------------------
+     *  ESCALATE MESSAGE
+     * ------------------------------------------------------------ */
+    escalate: {
+        text:
+`**Ticket Escalated!**
+
+Hey there, {user}! Your ticket has been escalated to our management team. Someone will assist you as soon as possible to resolve your issue or question quickly. Thank you for your patience.
+
+Escalated by {staff}.`,
+        pingText: "{user} {role}",
+    },
+
+    /* ------------------------------------------------------------
+     *  BEHAVIOUR
+     * ------------------------------------------------------------ */
+    behavior: {
+        // "delete" removes the channel after closing (transcript still saved)
+        // "archive" moves it to archiveCategoryId and locks it instead
+        onClose: "delete",
+        archiveCategoryId: "PUT_ARCHIVE_CATEGORY_ID_HERE",
+
+        // seconds to wait after "Close" is confirmed before deleting the channel
+        closeDelaySeconds: 5,
+    },
+};
