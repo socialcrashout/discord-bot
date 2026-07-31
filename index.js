@@ -4,7 +4,6 @@ const { Client, GatewayIntentBits, Collection, REST, Routes, Events  } = require
 const fs = require('fs')
 const path = require('path')
 const ticketManager = require('./utils/ticketManager')
-const donationManager = require('./utils/donationManager')
 
 const { DISCORD_TOKEN, CLIENT_ID, GUILD_ID, PREFIX } = process.env;
 
@@ -170,20 +169,6 @@ client.on(Events.InteractionCreate, async interaction => {
             return;
         }
 
-        // Donate command: method / robux type / usd method selects
-        if (
-            interaction.customId === donationManager.SELECT_METHOD ||
-            interaction.customId === donationManager.SELECT_ROBUX_TYPE ||
-            interaction.customId === donationManager.SELECT_USD_METHOD
-        ) {
-            try {
-                await donationManager.handleSelectMenu(interaction, client);
-            } catch (err) {
-                console.error("Error handling donation select menu:", err);
-            }
-            return;
-        }
-
         return;
     }
 
@@ -209,19 +194,6 @@ client.on(Events.InteractionCreate, async interaction => {
             return;
         }
 
-        // Donate command: "I've Paid" buttons for Robux and USD
-        if (
-            interaction.customId.startsWith(donationManager.BTN_ROBUX_PAID_PREFIX) ||
-            interaction.customId.startsWith(donationManager.BTN_USD_PAID_PREFIX)
-        ) {
-            try {
-                await donationManager.handleButton(interaction, client);
-            } catch (err) {
-                console.error("Error handling donation button:", err);
-            }
-            return;
-        }
-
         const verification = client.slashCommands.get("setup-verification");
 
         if (verification && interaction.customId === verification.VERIFY_BUTTON_ID) {
@@ -242,21 +214,6 @@ client.on(Events.InteractionCreate, async interaction => {
             return;
         }
 
-        return;
-    }
-
-    // Modals (the donate command's Robux and USD amount inputs)
-    if (interaction.isModalSubmit()) {
-        if (
-            interaction.customId.startsWith(donationManager.MODAL_ROBUX_AMOUNT_PREFIX) ||
-            interaction.customId.startsWith(donationManager.MODAL_USD_AMOUNT_PREFIX)
-        ) {
-            try {
-                await donationManager.handleModalSubmit(interaction, client);
-            } catch (err) {
-                console.error("Error handling donation modal submit:", err);
-            }
-        }
         return;
     }
 
