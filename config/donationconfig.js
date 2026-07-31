@@ -12,8 +12,14 @@ module.exports = {
     roblox: {
         // The .ROBLOSECURITY cookie for the account that owns the game pass
         // and t-shirt below. Put this in your .env as ROBLOX_COOKIE=... —
-        // never hardcode it here.
+        // never hardcode it here. Still used for the t-shirt price update.
         cookie: process.env.ROBLOX_COOKIE || "",
+
+        // Open Cloud API key with "Game Passes" write access, used for the
+        // gamepass price update. Create one at
+        // https://create.roblox.com/dashboard/credentials — put it in
+        // your .env as ROBLOX_API_KEY=...
+        apiKey: process.env.ROBLOX_API_KEY || "",
 
         // The universe (game) ID that owns the donation game pass.
         // Find it via the Creator Dashboard URL for your experience.
@@ -24,7 +30,7 @@ module.exports = {
 
         // Asset used for accounts under 16 (game passes are hidden for
         // under-13s/restricted accounts, t-shirts still work).
-        tshirtId: "100467197623095",
+        tshirtId: "PUT_TSHIRT_ID_HERE",
 
         // Users can now type any Robux amount they want (via a modal)
         // instead of picking from a preset list. These just guard against
@@ -34,8 +40,8 @@ module.exports = {
     },
 
     usd: {
-        kofiUrl: "https://ko-fi.com/mode",
-        cashappUrl: "https://cash.app/$ownthedream",
+        kofiUrl: "https://ko-fi.com/yourname",
+        cashappUrl: "https://cash.app/$yourname",
     },
 
     // Custom emoji shown in the appreciation message header.
