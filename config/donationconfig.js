@@ -30,7 +30,7 @@ module.exports = {
 
         // Asset used for accounts under 16 (game passes are hidden for
         // under-13s/restricted accounts, t-shirts still work).
-        tshirtId: "PUT_TSHIRT_ID_HERE",
+        tshirtId: "100467197623095",
 
         // Users can now type any Robux amount they want (via a modal)
         // instead of picking from a preset list. These just guard against
@@ -40,8 +40,7 @@ module.exports = {
     },
 
     usd: {
-        kofiUrl: "https://ko-fi.com/mode
-",
+        kofiUrl: "https://ko-fi.com/mode",
         cashappUrl: "https://cash.app/$ownthedream",
     },
 
