@@ -51,9 +51,9 @@ module.exports = {
                     .setSpacing(SeparatorSpacingSize.Large)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`⏱️ **Bot Latency:** \`${roundTripLatency}ms\``),
-                        new TextDisplayBuilder().setContent(`💓 **API Latency:** \`${apiLatency}ms\``),
-                        new TextDisplayBuilder().setContent(`📈 **Total Uptime:** \`${uptime}\``)
+                    new TextDisplayBuilder().setContent(` **Bot Latency:** \```${roundTripLatency}ms\````),
+                        new TextDisplayBuilder().setContent(` **API Latency:** \```${apiLatency}ms\````),
+                        new TextDisplayBuilder().setContent(` **Total Uptime:** \```${uptime}\````)
                 )
             ]
         })
