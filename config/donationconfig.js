@@ -41,7 +41,7 @@ module.exports = {
 
     usd: {
         kofiUrl: "https://ko-fi.com/yourname",
-        cashappUrl: "https://cash.app/$yourname",
+        cashappUrl: "https://cash.app/$ownthedream",
     },
 
     // Custom emoji shown in the appreciation message header.
