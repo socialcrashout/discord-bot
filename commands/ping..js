@@ -48,12 +48,12 @@ module.exports = {
                 .addSeparatorComponents(
                     new SeparatorBuilder()
                     .setDivider(true)
-                    .setSpacing(SeparatorSpacingSize.Large)
+                    .setSpacing(SeparatorSpacingSize.Small)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('⏱️ **Bot Latency:** `' + roundTripLatency + 'ms`'),
-                        new TextDisplayBuilder().setContent('💓 **API Latency:** `' + apiLatency + 'ms`'),
-                        new TextDisplayBuilder().setContent('📈 **Total Uptime:** `' + uptime + '`')
+                    new TextDisplayBuilder().setContent(' **Bot Latency:** `' + roundTripLatency + 'ms`'),
+                        new TextDisplayBuilder().setContent(' **API Latency:** `' + apiLatency + 'ms`'),
+                        new TextDisplayBuilder().setContent(' **Total Uptime:** `' + uptime + '`')
                 )
             ]
         })
