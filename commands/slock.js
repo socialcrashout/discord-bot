@@ -6,7 +6,7 @@ const {
     PermissionFlagsBits,
 } = require('discord.js');
 
-const { saveLock, getLock } = require('../utils/channelLock');
+const { saveLock, getLock } = require('../utils/channellLock');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
 
