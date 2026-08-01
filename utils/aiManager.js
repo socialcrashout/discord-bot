@@ -3,8 +3,8 @@ const Groq = require('groq-sdk');
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-const BOT_NAME = 'Nova Intelligence';
-const BRAND_NAME = 'Nova Designs';
+const BOT_NAME = 'Lorenzo from .mode';
+const BRAND_NAME = '.mode';
 
 const SERVICES_LIST = `• Professional Server Setups
 - Livery & ELS Design
