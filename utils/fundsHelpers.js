@@ -63,9 +63,7 @@ function buildFundsContainer({ groupId, groupName, groupFunds, pending, iconURL 
 
     container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `1. <:money:1502514540687003668> **Available:** R$${groupFunds.toLocaleString()}\n` +
-            `2. <:clock:1533146124389585078> **Pending:** R$${pending.toLocaleString()}\n` +
-            `3. <:paper:1508660910313705645> **Total:** R$${total.toLocaleString()}`
+            `💰 **Current:** R$${groupFunds.toLocaleString()}   ⏳ **Pending:** R$${pending.toLocaleString()}   📊 **Total:** R$${total.toLocaleString()}`
         )
     );
 
