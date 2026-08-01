@@ -61,12 +61,14 @@ function buildFundsContainer({ groupId, groupName, groupFunds, pending, iconURL 
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
     );
 
-    container.addTextDisplayComponents(
+   container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `💰 **Current:** R$${groupFunds.toLocaleString()}   ⏳ **Pending:** R$${pending.toLocaleString()}   📊 **Total:** R$${total.toLocaleString()}`
+            `1. <:money:1502514540687003668> **Available:** R$${groupFunds.toLocaleString()}\n` +
+            `2. <:clock:1533146124389585078> **Pending:** R$${pending.toLocaleString()}\n` +
+            `3. <:paper:1508660910313705645> **Total:** R$${total.toLocaleString()}`
         )
     );
-
+    
     container.addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small)
     );
