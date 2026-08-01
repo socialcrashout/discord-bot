@@ -41,6 +41,7 @@ module.exports = {
             });
 
         } catch (err) {
+            console.error('[-funds] Error:', err);
             await loadingMsg.edit({
                 content: errorMessage(err),
             });
