@@ -73,7 +73,7 @@ function formatDuration(ms) {
   return parts.join(' ');
 }
 
-client.once('ready', () => {
+client.once('clientReady', () => {
   logEvent(`Bot logged in as ${client.user.tag}. AFK system ready.`);
 });
 
