@@ -1,5 +1,5 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
-const { getLock, clearLock } = require('../utils/channelLock');
+const { getLock, clearLock } = require('../utils/channellLock');
 
 const ALLOWED_ROLE_IDS = [
     '1504311819458580531',
