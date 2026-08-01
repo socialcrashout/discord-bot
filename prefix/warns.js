@@ -1,7 +1,12 @@
 const { ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, MessageFlags } = require('discord.js');
 const { getWarningsForUser } = require('../utils/warnings');
 
-const ALLOWED_ROLE_ID = '1504320706341502996,1504313264576925757,1504312910862880879,1504311819458580531';
+const ALLOWED_ROLE_IDS = [
+    '1504320706341502996',
+    '1504313264576925757',
+    '1504312910862880879',
+    '1504311819458580531',
+];
 
 module.exports = {
     name: 'warns',
@@ -16,7 +21,7 @@ module.exports = {
             flags: MessageFlags.IsComponentsV2,
         });
 
-        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+        if (!message.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id))) {
             return errorReply('<:WarningIcon:1508245066135765034> You do not have permission to view warnings.');
         }
 
