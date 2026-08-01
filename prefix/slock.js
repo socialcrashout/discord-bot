@@ -1,5 +1,5 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
-const { saveLock, getLock } = require('../utils/channellLock');
+const { saveLock, getLock } = require('../utils/channelLock');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
 
