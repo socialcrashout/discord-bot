@@ -1,7 +1,10 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require('discord.js');
 const getNextCase = require('../utils/getNextCase');
 
-const ALLOWED_ROLE_ID = '1504311819458580531,1504312910862880879';
+const ALLOWED_ROLE_IDS = [
+    '1504311819458580531',
+    '1504312910862880879',
+];
 const LOG_CHANNEL_ID = '1506450870269906944';
 
 module.exports = {
@@ -21,7 +24,7 @@ module.exports = {
         });
 
         // Role restriction
-        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+        if (!message.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id))) {
             return errorReply('You do not have permission to use this command.');
         }
 
