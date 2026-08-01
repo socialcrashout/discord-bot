@@ -5,7 +5,7 @@ const {
     MessageFlags,
 } = require('discord.js');
 
-const { getLock, clearLock } = require('../utils/channelLock');
+const { getLock, clearLock } = require('../utils/channellLock');
 
 const LOG_CHANNEL_ID = '1506450870269906944';
 
