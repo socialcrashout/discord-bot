@@ -4,7 +4,8 @@ const {
     ContainerBuilder,
     TextDisplayBuilder,
     SeparatorBuilder,
-    SectionBuilder,
+    MediaGalleryBuilder,
+    MediaGalleryItemBuilder,
     MessageFlags,
 } = require('discord.js');
 
@@ -73,15 +74,11 @@ function buildStickyContainer(content) {
 
     container.addSeparatorComponents(new SeparatorBuilder());
 
-    // Footer-style row: small text + thumbnail accessory using the hardcoded image.
-    container.addSectionComponents(
-        new SectionBuilder()
-            .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('-# Sticky Message')
-            )
-            .setThumbnailAccessory(thumbnail =>
-                thumbnail.setURL(FOOTER_IMAGE)
-            )
+    // Full-width footer image, shown inline (not as a small thumbnail).
+    container.addMediaGalleryComponents(
+        new MediaGalleryBuilder().addItems(
+            new MediaGalleryItemBuilder().setURL(FOOTER_IMAGE)
+        )
     );
 
     return container;

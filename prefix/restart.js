@@ -1,15 +1,13 @@
 const { exec } = require('child_process');
 
-// Only these user IDs are allowed to run this command.
-const ALLOWED_USER_IDS = [
-    "1504311819458580531", // replace with your Discord user ID
-];
+// Only members with this role are allowed to run this command.
+const ALLOWED_ROLE_ID = "1504311819458580531"; // replace with the role's ID
 
 module.exports = {
     name: 'restart',
 
     async execute(message, args, client) {
-        if (!ALLOWED_USER_IDS.includes(message.author.id)) {
+        if (!message.member.roles.cache.has(ALLOWED_ROLE_ID)) {
             return message.reply("You don't have permission to do that.").catch(console.error);
         }
 
