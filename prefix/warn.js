@@ -43,7 +43,7 @@ module.exports = {
             const caseNumber = await getNextCase(message.guild.id);
             const timestamp = Math.floor(Date.now() / 1000);
 
-            addWarning(message.guild.id, {
+          await addWarning(message.guild.id, {
                 caseNumber,
                 userId: target.id,
                 userTag: target.user.tag,

@@ -57,7 +57,7 @@ module.exports = {
             const caseNumber = await getNextCase(interaction.guild.id);
             const timestamp = Math.floor(Date.now() / 1000);
 
-            addWarning(interaction.guild.id, {
+            awaitaddWarning(interaction.guild.id, {
                 caseNumber,
                 userId: target.id,
                 userTag: target.tag,

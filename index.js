@@ -1,9 +1,10 @@
 require('dotenv').config();
 
-const { Client, GatewayIntentBits, Collection, REST, Routes, Events  } = require('discord.js')
+const { Client, GatewayIntentBits, Collection, REST, Routes, Events } = require('discord.js')
 const fs = require('fs')
 const path = require('path')
 const ticketManager = require('./utils/ticketManager')
+const { connectDB } = require('./db');
 
 const { DISCORD_TOKEN, CLIENT_ID, GUILD_ID, PREFIX } = process.env;
 
@@ -27,44 +28,6 @@ client.logs = {
     warn: (...args) => console.warn('[WARN]', ...args),
     error: (...args) => console.error('[ERROR]', ...args),
 };
-
-// ── Data files setup ─────────────────────────────────────────
-// On Railway, the /data folder lives on a mounted Volume that starts
-// empty. This makes sure the folder and every JSON file the bot expects
-// exist (with sane defaults) before anything tries to read/write them,
-// so commands never crash with ENOENT on a fresh volume or redeploy.
-
-const DATA_DIR = path.join(__dirname, "data");
-const DEFAULT_FILES = {
-    "cases.json": [],
-    "channelLock.json": {},
-    "memberStats.json": {},
-    "reviews.json": [],
-    "roblox-links.json": {},
-    "serverLock.json": {},
-    "sticky.json": {},
-    "ticketCount.json": { count: 0 },
-    "warnings.json": [],
-};
-
-function ensureDataFiles() {
-    if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-        console.log(`Created data directory at ${DATA_DIR}`);
-    }
-
-    for (const [filename, defaultValue] of Object.entries(DEFAULT_FILES)) {
-        const filePath = path.join(DATA_DIR, filename);
-        if (!fs.existsSync(filePath)) {
-            fs.writeFileSync(filePath, JSON.stringify(defaultValue, null, 2));
-            console.log(`Created missing data file: ${filename}`);
-        }
-    }
-}
-
-ensureDataFiles();
-
-// ─────────────────────────────────────────────────────────────
 
 function requireCommand(filePath) {
     try {
@@ -167,12 +130,6 @@ async function deploySlashCommands() {
         console.error("Error deploying slash commands:", err);
     }
 }
-
-loadPrefixCommands();
-loadSlashCommands();
-loadEvents();
-
-deploySlashCommands();
 
 client.once(Events.ClientReady, c => {
     console.log(`Logged in as ${c.user.tag}`);
@@ -311,4 +268,17 @@ client.on(Events.GuildMemberRemove, async member => {
     await updateMemberCount(member.guild);
 });
 
-client.login(DISCORD_TOKEN);
+// ── Startup ──────────────────────────────────────────────────
+async function start() {
+    await connectDB(); // connect to MongoDB before anything else runs
+
+    loadPrefixCommands();
+    loadSlashCommands();
+    loadEvents();
+
+    await deploySlashCommands();
+
+    client.login(DISCORD_TOKEN);
+}
+
+start();
