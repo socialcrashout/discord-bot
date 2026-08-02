@@ -31,6 +31,10 @@ const BTN_ESCALATE = "ticket_escalate";
 /* ------------------------------------------------------------------ *
  *  Small persistent counter so ticket channel names don't collide
  *  even after a restart. Stored in MongoDB (ticketCounters collection)
+ *
+ *  NOTE: MongoDB Node driver v6+ changed findOneAndUpdate to return the
+ *  document itself instead of wrapping it in { value }. We handle both
+ *  shapes here so this keeps working whether you're on v5 or v6+.
  * ------------------------------------------------------------------ */
 async function nextTicketNumber() {
     const db = getDB();
@@ -39,7 +43,8 @@ async function nextTicketNumber() {
         { $inc: { count: 1 } },
         { upsert: true, returnDocument: "after" }
     );
-    return result.value.count;
+    const doc = result?.value ?? result;
+    return doc.count;
 }
 
 /* ------------------------------------------------------------------ *
@@ -167,10 +172,10 @@ async function handleCategorySelect(interaction) {
     const categoryId = interaction.values[0];
     const category = config.categories.find((c) => c.id === categoryId);
     if (!category) {
-        return interaction.reply({ content: "Unknown category, tell an admin.", ephemeral: true });
+        return interaction.reply({ content: "Unknown category, tell an admin.", flags: MessageFlags.Ephemeral });
     }
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const guild = interaction.guild;
     const pingRoleId = category.pingRoleId || config.ids.supportRoleId;
@@ -242,7 +247,7 @@ async function handleButton(interaction) {
     switch (customId) {
         case BTN_CLAIM: {
             if (!isStaff) {
-                return interaction.reply({ content: "Only support staff can claim tickets.", ephemeral: true });
+                return interaction.reply({ content: "Only support staff can claim tickets.", flags: MessageFlags.Ephemeral });
             }
             const category = config.categories.find((c) => channel.name.startsWith(c.channelPrefix)) || config.categories[0];
             const openerId = channel.topic?.match(/opener: (\d+)/)?.[1];
@@ -255,7 +260,10 @@ async function handleButton(interaction) {
 
         case BTN_CLOSE: {
             const confirm = buildCloseConfirmContainer();
-            await interaction.reply({ components: [confirm], flags: MessageFlags.IsComponentsV2, ephemeral: true });
+            await interaction.reply({
+                components: [confirm],
+                flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+            });
             break;
         }
 
@@ -280,7 +288,7 @@ async function handleButton(interaction) {
 
         case BTN_ESCALATE: {
             if (!isStaff) {
-                return interaction.reply({ content: "Only support staff can escalate tickets.", ephemeral: true });
+                return interaction.reply({ content: "Only support staff can escalate tickets.", flags: MessageFlags.Ephemeral });
             }
             const openerId = channel.topic?.match(/opener: (\d+)/)?.[1];
             const opener = openerId ? await interaction.guild.members.fetch(openerId).catch(() => null) : null;
@@ -296,7 +304,7 @@ async function handleButton(interaction) {
                 flags: MessageFlags.IsComponentsV2,
                 allowedMentions: { roles: config.ids.managementRoleId ? [config.ids.managementRoleId] : [] },
             });
-            await interaction.reply({ content: "Ticket escalated.", ephemeral: true });
+            await interaction.reply({ content: "Ticket escalated.", flags: MessageFlags.Ephemeral });
             break;
         }
 
