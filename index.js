@@ -28,6 +28,44 @@ client.logs = {
     error: (...args) => console.error('[ERROR]', ...args),
 };
 
+// ── Data files setup ─────────────────────────────────────────
+// On Railway, the /data folder lives on a mounted Volume that starts
+// empty. This makes sure the folder and every JSON file the bot expects
+// exist (with sane defaults) before anything tries to read/write them,
+// so commands never crash with ENOENT on a fresh volume or redeploy.
+
+const DATA_DIR = path.join(__dirname, "data");
+const DEFAULT_FILES = {
+    "cases.json": [],
+    "channelLock.json": {},
+    "memberStats.json": {},
+    "reviews.json": [],
+    "roblox-links.json": {},
+    "serverLock.json": {},
+    "sticky.json": {},
+    "ticketCount.json": { count: 0 },
+    "warnings.json": [],
+};
+
+function ensureDataFiles() {
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+        console.log(`Created data directory at ${DATA_DIR}`);
+    }
+
+    for (const [filename, defaultValue] of Object.entries(DEFAULT_FILES)) {
+        const filePath = path.join(DATA_DIR, filename);
+        if (!fs.existsSync(filePath)) {
+            fs.writeFileSync(filePath, JSON.stringify(defaultValue, null, 2));
+            console.log(`Created missing data file: ${filename}`);
+        }
+    }
+}
+
+ensureDataFiles();
+
+// ─────────────────────────────────────────────────────────────
+
 function requireCommand(filePath) {
     try {
         if (require.cache[require.resolve(filePath)]) {
