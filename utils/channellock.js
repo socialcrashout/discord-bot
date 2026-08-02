@@ -1,39 +1,26 @@
-const fs = require('fs');
-const path = require('path');
+const { getDB } = require('../db');
 
-const DATA_PATH = path.join(__dirname, '..', 'data', 'channelLock.json');
+// Each document shape:
+// { _id: channelId, value: previousSendMessagesValue (true|false|null) }
 
-function readData() {
-  try {
-    const raw = fs.readFileSync(DATA_PATH, 'utf8');
-    return JSON.parse(raw);
-  } catch (err) {
-    return {};
-  }
+async function saveLock(channelId, previousValue) {
+  const db = getDB();
+  await db.collection('channelLock').updateOne(
+    { _id: channelId },
+    { $set: { value: previousValue } },
+    { upsert: true }
+  );
 }
 
-function writeData(data) {
-  fs.mkdirSync(path.dirname(DATA_PATH), { recursive: true });
-  fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
+async function getLock(channelId) {
+  const db = getDB();
+  const doc = await db.collection('channelLock').findOne({ _id: channelId });
+  return doc ? doc.value : undefined; // undefined = never locked, matches old hasOwnProperty behavior
 }
 
-// Shape: { "<channelId>": previousSendMessagesValue (true|false|null) }
-
-function saveLock(channelId, previousValue) {
-  const data = readData();
-  data[channelId] = previousValue;
-  writeData(data);
-}
-
-function getLock(channelId) {
-  const data = readData();
-  return Object.prototype.hasOwnProperty.call(data, channelId) ? data[channelId] : undefined;
-}
-
-function clearLock(channelId) {
-  const data = readData();
-  delete data[channelId];
-  writeData(data);
+async function clearLock(channelId) {
+  const db = getDB();
+  await db.collection('channelLock').deleteOne({ _id: channelId });
 }
 
 module.exports = { saveLock, getLock, clearLock };

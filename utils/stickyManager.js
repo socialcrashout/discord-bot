@@ -1,5 +1,3 @@
-const fs = require('fs');
-const path = require('path');
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -8,57 +6,39 @@ const {
     MediaGalleryItemBuilder,
     MessageFlags,
 } = require('discord.js');
+const { getDB } = require('../db');
 
 // Hardcoded footer image, shown at the bottom of every sticky message.
 const FOOTER_IMAGE = 'https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw';
 
-const DATA_PATH = path.join(__dirname, '..', 'data', 'sticky.json');
-
-function ensureDataFile() {
-    const dir = path.dirname(DATA_PATH);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    if (!fs.existsSync(DATA_PATH)) fs.writeFileSync(DATA_PATH, JSON.stringify({}, null, 2));
+async function getSticky(channelId) {
+    const db = getDB();
+    const doc = await db.collection('sticky').findOne({ _id: channelId });
+    if (!doc) return null;
+    return { content: doc.content, messageId: doc.messageId };
 }
 
-function loadData() {
-    ensureDataFile();
-    try {
-        return JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
-    } catch (err) {
-        console.error('[sticky] failed to read data file:', err);
-        return {};
-    }
+async function setSticky(channelId, content, messageId = null) {
+    const db = getDB();
+    await db.collection('sticky').updateOne(
+        { _id: channelId },
+        { $set: { content, messageId } },
+        { upsert: true }
+    );
 }
 
-function saveData(data) {
-    ensureDataFile();
-    fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
+async function updateStickyMessageId(channelId, messageId) {
+    const db = getDB();
+    await db.collection('sticky').updateOne(
+        { _id: channelId },
+        { $set: { messageId } }
+    );
 }
 
-function getSticky(channelId) {
-    const data = loadData();
-    return data[channelId] || null;
-}
-
-function setSticky(channelId, content, messageId = null) {
-    const data = loadData();
-    data[channelId] = { content, messageId };
-    saveData(data);
-}
-
-function updateStickyMessageId(channelId, messageId) {
-    const data = loadData();
-    if (!data[channelId]) return;
-    data[channelId].messageId = messageId;
-    saveData(data);
-}
-
-function removeSticky(channelId) {
-    const data = loadData();
-    if (!data[channelId]) return false;
-    delete data[channelId];
-    saveData(data);
-    return true;
+async function removeSticky(channelId) {
+    const db = getDB();
+    const result = await db.collection('sticky').deleteOne({ _id: channelId });
+    return result.deletedCount > 0;
 }
 
 /**
@@ -74,7 +54,6 @@ function buildStickyContainer(content) {
 
     container.addSeparatorComponents(new SeparatorBuilder());
 
-    // Full-width footer image, shown inline (not as a small thumbnail).
     container.addMediaGalleryComponents(
         new MediaGalleryBuilder().addItems(
             new MediaGalleryItemBuilder().setURL(FOOTER_IMAGE)
@@ -100,7 +79,7 @@ async function postSticky(channel, content) {
  * one at the bottom of the channel, then saves the new message id.
  */
 async function repostSticky(channel) {
-    const sticky = getSticky(channel.id);
+    const sticky = await getSticky(channel.id);
     if (!sticky) return;
 
     if (sticky.messageId) {
@@ -114,7 +93,7 @@ async function repostSticky(channel) {
 
     try {
         const newMessage = await postSticky(channel, sticky.content);
-        updateStickyMessageId(channel.id, newMessage.id);
+        await updateStickyMessageId(channel.id, newMessage.id);
     } catch (err) {
         console.error('[sticky] failed to repost sticky message:', err);
     }

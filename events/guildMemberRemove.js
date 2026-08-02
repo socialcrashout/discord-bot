@@ -1,26 +1,20 @@
-const fs = require("fs");
-const path = require("path");
+const { getDB } = require("../db");
 
-const dataPath = path.join(__dirname, "..", "data", "memberStats.json");
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 module.exports = {
     name: "guildMemberRemove",
 
     async execute(member) {
-        let data = { history: [] };
+        const db = getDB();
+        const collection = db.collection("memberStats");
 
-        if (fs.existsSync(dataPath)) {
-            data = JSON.parse(fs.readFileSync(dataPath, "utf8"));
-        }
-
-        data.history.push({
+        await collection.insertOne({
             type: "leave",
             timestamp: Date.now()
         });
 
-        const cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
-        data.history = data.history.filter(x => x.timestamp >= cutoff);
-
-        fs.writeFileSync(dataPath, JSON.stringify(data, null, 4));
+        const cutoff = Date.now() - THIRTY_DAYS_MS;
+        await collection.deleteMany({ timestamp: { $lt: cutoff } });
     }
 };

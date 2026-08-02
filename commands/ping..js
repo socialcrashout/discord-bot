@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, ContainerBuilder, MessageFlags, TextDisplayBuilder, SeparatorBuilder, SeparatorSpacingSize } = require('discord.js')
+const { getDB } = require('../db')
 
 function formatUptime(ms) {
     const totalSeconds = Math.floor(ms / 1000);
@@ -14,6 +15,18 @@ function formatUptime(ms) {
     parts.push(`${seconds}s`);
 
     return parts.join(' ');
+}
+
+async function getMongoStatus() {
+    try {
+        const db = getDB();
+        const start = Date.now();
+        await db.command({ ping: 1 });
+        const latency = Date.now() - start;
+        return { connected: true, latency };
+    } catch (err) {
+        return { connected: false, latency: null };
+    }
 }
 
 module.exports = {
@@ -37,6 +50,11 @@ module.exports = {
         const roundTripLatency = sent.createdTimestamp - interaction.createdTimestamp;
         const apiLatency = Math.round(interaction.client.ws.ping);
         const uptime = formatUptime(interaction.client.uptime);
+        const mongoStatus = await getMongoStatus();
+
+        const mongoText = mongoStatus.connected
+            ? ` **Database:** ✅ \`${mongoStatus.latency}ms\``
+            : ` **Database:** ❌ \`disconnected\``;
 
         await interaction.editReply({
             flags: [MessageFlags.IsComponentsV2],
@@ -53,7 +71,8 @@ module.exports = {
                 .addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(' **Bot Latency:** `' + roundTripLatency + 'ms`'),
                         new TextDisplayBuilder().setContent(' **API Latency:** `' + apiLatency + 'ms`'),
-                        new TextDisplayBuilder().setContent(' **Total Uptime:** `' + uptime + '`')
+                        new TextDisplayBuilder().setContent(' **Total Uptime:** `' + uptime + '`'),
+                        new TextDisplayBuilder().setContent(mongoText)
                 )
             ]
         })

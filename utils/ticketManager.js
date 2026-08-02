@@ -16,11 +16,10 @@ const {
     ChannelType,
 } = require("discord.js");
 
-const fs = require("fs");
-const path = require("path");
 const config = require("../config");
 const { parseEmoji } = require("./emoji");
 const { generateTranscript } = require("./transcript");
+const { getDB } = require("../db");
 
 const SELECT_ID = "ticket_panel_select";
 const BTN_CLAIM = "ticket_claim";
@@ -31,21 +30,16 @@ const BTN_ESCALATE = "ticket_escalate";
 
 /* ------------------------------------------------------------------ *
  *  Small persistent counter so ticket channel names don't collide
- *  even after a restart. Stored in data/ticketCount.json
+ *  even after a restart. Stored in MongoDB (ticketCounters collection)
  * ------------------------------------------------------------------ */
-const COUNTER_FILE = path.join(__dirname, "..", "data", "ticketCount.json");
-
-function nextTicketNumber() {
-    let n = 1;
-    try {
-        const raw = JSON.parse(fs.readFileSync(COUNTER_FILE, "utf-8"));
-        n = (raw.count || 0) + 1;
-    } catch {
-        /* file doesn't exist yet - start at 1 */
-    }
-    fs.mkdirSync(path.dirname(COUNTER_FILE), { recursive: true });
-    fs.writeFileSync(COUNTER_FILE, JSON.stringify({ count: n }, null, 2));
-    return n;
+async function nextTicketNumber() {
+    const db = getDB();
+    const result = await db.collection("ticketCounters").findOneAndUpdate(
+        { _id: "global" },
+        { $inc: { count: 1 } },
+        { upsert: true, returnDocument: "after" }
+    );
+    return result.value.count;
 }
 
 /* ------------------------------------------------------------------ *
@@ -180,7 +174,7 @@ async function handleCategorySelect(interaction) {
 
     const guild = interaction.guild;
     const pingRoleId = category.pingRoleId || config.ids.supportRoleId;
-    const num = String(nextTicketNumber()).padStart(4, "0");
+    const num = String(await nextTicketNumber()).padStart(4, "0");
     const channelName = `${category.channelPrefix}-${num}`;
 
     const overwrites = [
