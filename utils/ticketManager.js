@@ -104,8 +104,14 @@ function buildPanelContainer() {
 /* ------------------------------------------------------------------ *
  *  TICKET WELCOME CONTAINER (sent inside the new ticket channel)
  * ------------------------------------------------------------------ */
+const COLOR_CLAIMED = 0x57f287; // Discord "green" — shown once a ticket is claimed
+
 function buildTicketContainer(member, category, { claimed = null, escalated = false } = {}) {
     const container = new ContainerBuilder();
+
+    if (claimed) {
+        container.setAccentColor(COLOR_CLAIMED);
+    }
 
     if (config.ticket.bannerUrl) {
         container.addMediaGalleryComponents(
@@ -140,6 +146,15 @@ function buildTicketContainer(member, category, { claimed = null, escalated = fa
 
     container.addActionRowComponents(row);
 
+    return container;
+}
+
+function buildClaimConfirmContainer(claimedBy) {
+    const container = new ContainerBuilder();
+    container.setAccentColor(COLOR_CLAIMED);
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`✅ You claimed this ticket, ${claimedBy}.`)
+    );
     return container;
 }
 
@@ -255,6 +270,11 @@ async function handleButton(interaction) {
 
             const container = buildTicketContainer(opener?.user || "the ticket opener", category, { claimed: interaction.user });
             await interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
+
+            await interaction.followUp({
+                components: [buildClaimConfirmContainer(interaction.user)],
+                flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+            });
             break;
         }
 
