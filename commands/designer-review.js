@@ -23,9 +23,22 @@ const BANNER_IMAGE_URL =
 const FOOTER_IMAGE_URL =
     "https://yumi.onl/api/files/6a6974fa91bbc4fb21f03ab5/raw";
 
-const REVIEWS_PATH = path.join(__dirname, "..", "data", "reviews.json");
+const DATA_DIR = path.join(__dirname, "..", "data");
+const REVIEWS_PATH = path.join(DATA_DIR, "reviews.json");
 
 const STAR_EMOJI = "<:Star:1531882389062684792>";
+
+// ──────────────────────────────────────────────────────────
+
+// Make sure the data directory + file exist before we ever try to read/write.
+function ensureReviewsFile() {
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(REVIEWS_PATH)) {
+        fs.writeFileSync(REVIEWS_PATH, JSON.stringify([], null, 2));
+    }
+}
 
 // ──────────────────────────────────────────────────────────
 
@@ -93,32 +106,36 @@ module.exports = {
             });
         }
 
-        // Create file if it doesn't exist
-        if (!fs.existsSync(REVIEWS_PATH)) {
+        try {
+            // Make sure /data and reviews.json exist before touching them
+            ensureReviewsFile();
+
+            // Load reviews
+            const reviews = JSON.parse(
+                fs.readFileSync(REVIEWS_PATH, "utf8")
+            );
+
+            // Save review
+            reviews.push({
+                userId: staff.id,
+                reviewerId: interaction.user.id,
+                stars: ratingValue,
+                reason: feedback,
+                createdAt: Date.now(),
+            });
+
             fs.writeFileSync(
                 REVIEWS_PATH,
-                JSON.stringify([], null, 2)
+                JSON.stringify(reviews, null, 2)
             );
+        } catch (err) {
+            console.error("Failed to save review:", err);
+            return interaction.reply({
+                content:
+                    "❌ Something went wrong saving your review. Please try again.",
+                flags: MessageFlags.Ephemeral,
+            });
         }
-
-        // Load reviews
-        const reviews = JSON.parse(
-            fs.readFileSync(REVIEWS_PATH, "utf8")
-        );
-
-        // Save review
-        reviews.push({
-            userId: staff.id,
-            reviewerId: interaction.user.id,
-            stars: ratingValue,
-            reason: feedback,
-            createdAt: Date.now(),
-        });
-
-        fs.writeFileSync(
-            REVIEWS_PATH,
-            JSON.stringify(reviews, null, 2)
-        );
 
         const stars = STAR_EMOJI.repeat(ratingValue);
 
