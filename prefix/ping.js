@@ -13,6 +13,21 @@ async function getMongoStatus() {
     }
 }
 
+function formatUptime(seconds) {
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    const parts = [];
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0) parts.push(`${minutes}m`);
+    parts.push(`${secs}s`);
+
+    return parts.join(' ');
+}
+
 module.exports = {
     name: 'ping',
     description: 'replies with pong and latency'
@@ -38,10 +53,11 @@ module.exports = {
         const roundTripLatency = sent.createdTimestamp - message.createdTimestamp;
         const apiLatency = Math.round(client.ws.ping);
         const mongoStatus = await getMongoStatus();
+        const uptime = formatUptime(process.uptime());
 
         const mongoText = mongoStatus.connected
-            ? `🗄️ **Database:** ✅ ${mongoStatus.latency}ms`
-            : `🗄️ **Database:** ❌ disconnected`;
+            ? `**Database:** Connected ${mongoStatus.latency}ms`
+            : `**Database:** Disconnected`;
 
         
         await sent.edit({
@@ -57,8 +73,9 @@ module.exports = {
                             .setSpacing(SeparatorSpacingSize.Large)
                     )
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(`⏱️ **Bot Latency:** ${roundTripLatency}ms`),
-                        new TextDisplayBuilder().setContent(`💓 **API Latency:** ${apiLatency}ms`),
+                        new TextDisplayBuilder().setContent(`**Bot Latency:** ${roundTripLatency}ms`),
+                        new TextDisplayBuilder().setContent(`**API Latency:** ${apiLatency}ms`),
+                        new TextDisplayBuilder().setContent(`**Total Uptime:** ${uptime}`),
                         new TextDisplayBuilder().setContent(mongoText)
                     )
             ]
